@@ -261,7 +261,6 @@ Documentation=https://github.com/HyNetwork/hysteria/wiki
 After=network.target
 
 [Service]
-User=hysteria
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_NET_RAW
 AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_NET_RAW
 NoNewPrivileges=true
