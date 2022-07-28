@@ -409,12 +409,17 @@ systemctl stop wg-quick@wgcf >/dev/null 2>&1
 sureipadress
 systemctl start wg-quick@wgcf >/dev/null 2>&1
 fi
-if [[ $ym = www.bing.com ]]; then
+certificate=`cat /etc/hysteria/config.json 2>/dev/null | grep cert | awk '{print $2}' | awk -F '"' '{ print $2}'`
+if [[ $certificate = '/etc/hysteria/cert.crt' ]]; then
 ym=www.bing.com
-ymip=$ip;ins=true
+if [[ -z $(curl -s4m5 https://ip.gs -k) ]]; then
+ymip=[$ip]
+else
+ymip=$ip
+fi
 else
 ym=$(cat /etc/hysteria/ca.log)
-ymip=$(cat /etc/hysteria/ca.log);ins=false
+ymip=$(cat /etc/hysteria/ca.log)
 fi
 }
 
@@ -450,9 +455,9 @@ sed -i "s/$oldserver/\[${ymip}\]/g" /root/HY/URL.txt
 sed -i "s!$servername!$ym!g" /root/HY/acl/v2rayn.json
 sed -i "s!$servername!$ym!g" /root/HY/URL.txt
 else
-sed -i "s!$oldserver!$ymip!g" /root/HY/acl/v2rayn.json
+sed -i "s!$oldserver!${ymip}!g" /root/HY/acl/v2rayn.json
 sed -i "s!$servername!$ym!g" /root/HY/acl/v2rayn.json
-sed -i "s!$oldserver!$ymip!g" /root/HY/URL.txt
+sed -i "s!$oldserver!${ymip}!g" /root/HY/URL.txt
 sed -i "s!$servername!$ym!g" /root/HY/URL.txt
 fi
 
@@ -560,7 +565,7 @@ green "  2. 卸载hysteria"
 white "----------------------------------------------------------------------------------"
 green "  3. 更换当前协议类型" 
 green "  4. 切换IPV4/IPV6出站优先级"
-green "  5. 更换当前证书类型"
+green "  5. 等更新……"
 green "  6. 关闭、开启、重启hysteria"   
 green "  7. 更新hysteria-yg安装脚本"  
 green "  8. 更新hysteria内核"
@@ -596,7 +601,7 @@ case "$Input" in
  2 ) unins;;
  3 ) changepr;;
  4 ) changeip;;
- 5 ) changecertificate;;
+ 5 ) exit;;
  6 ) stclre;;
  7 ) uphyyg;; 
  8 ) uphysteriacore;;
