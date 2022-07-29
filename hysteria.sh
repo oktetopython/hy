@@ -397,11 +397,11 @@ else
 oldserver=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server | awk '{print $2}' | awk -F '"' '{ print $2}'| cut -d ':' -f 1`
 fi
 if [[ $certificate = '/etc/hysteria/cert.crt' ]]; then
-ym=www.bing.com
-ymip=$ip
-else
 ym=$(cat /etc/hysteria/ca.log)
 ymip=$(cat /etc/hysteria/ca.log)
+else
+ym=www.bing.com
+ymip=$ip
 fi
 }
 wgcfgo
@@ -463,10 +463,10 @@ sed -i "2s/\[$oldserver\]/${ymip}/g" /root/HY/acl/v2rayn.json
 sed -i "s/\[$oldserver\]/${ymip}/g" /root/HY/URL.txt
 elif [[ $certificate = '/root/cert.crt' && -n $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/$oldserver/\[${ymip}\]/g" /root/HY/acl/v2rayn.json
-sed -i "s/$oldserver/\[${ymip}\]" /root/HY/URL.txt
+sed -i "s/$oldserver/\[${ymip}\]/" /root/HY/URL.txt
 elif [[ $certificate = '/root/cert.crt' && -z $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/$oldserver/${ymip}/g" /root/HY/acl/v2rayn.json
-sed -i "s/$oldserver/${ymip}" /root/HY/URL.txt
+sed -i "s/$oldserver/${ymip}/" /root/HY/URL.txt
 elif [[ $certificate = '/etc/hysteria/cert.crt' && -z $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/$oldserver/${ymip}/g" /root/HY/acl/v2rayn.json
 sed -i "s/$oldserver/${ymip}/g" /root/HY/URL.txt
@@ -545,8 +545,7 @@ changeip
 elif [ $choose == "2" ];then
 changepr
 elif [ $choose == "3" ];then
-# changecertificate
-yellow "修复BUG中"
+changecertificate
 elif [ $choose == "4" ];then
 changepswd
 elif [ $choose == "5" ];then
