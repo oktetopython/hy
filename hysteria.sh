@@ -345,9 +345,9 @@ uphyyg(){
 if [[ -z $(systemctl status hysteria-server 2>/dev/null | grep -w active) || ! -f '/etc/hysteria/config.json' ]]; then
 red "未正常安装hysteria!" && exit
 fi
+rm -rf /usr/bin/hy
 wget -N https://gitlab.com/rwkgyg/hysteria-yg/raw/main/hysteria.sh
 chmod +x /root/hysteria.sh 
-rm -rf /usr/bin/hy
 ln -sf /root/hysteria.sh /usr/bin/hy
 green "安装脚本升级成功"
 }
