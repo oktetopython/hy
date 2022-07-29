@@ -545,7 +545,8 @@ changeip
 elif [ $choose == "2" ];then
 changepr
 elif [ $choose == "3" ];then
-changecertificate
+# changecertificate
+yellow "修复BUG中"
 elif [ $choose == "4" ];then
 changepswd
 elif [ $choose == "5" ];then
