@@ -1,5 +1,5 @@
 #!/bin/bash
-hyygV="22.7.28 V 2.1"
+hyygV="22.7.29 V 2.5"
 remoteV=`wget -qO- https://gitlab.com/rwkgyg/hysteria-yg/raw/main/hysteria.sh | sed  -n 2p | cut -d '"' -f 2`
 red='\033[0;31m'
 bblue='\033[0;34m'
@@ -43,6 +43,18 @@ bit=`uname -m`
 [[ $bit = aarch64 ]] && cpu=ARM64
 vi=`systemd-detect-virt`
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+wgcfgo(){
+wgcfv6=$(curl -s6m5 https://www.cloudflare.com/cdn-cgi/trace -k | grep warp | cut -d= -f2)
+wgcfv4=$(curl -s4m5 https://www.cloudflare.com/cdn-cgi/trace -k | grep warp | cut -d= -f2)
+if [[ ! $wgcfv4 =~ on|plus && ! $wgcfv6 =~ on|plus ]]; then
+sureipadress
+else
+systemctl stop wg-quick@wgcf >/dev/null 2>&1
+sureipadress
+systemctl start wg-quick@wgcf >/dev/null 2>&1
+fi
+}
 
 start(){
 if [[ -n $(sysctl net.ipv4.tcp_congestion_control 2>/dev/null | awk -F ' ' '{print $3}') ]]; then
@@ -137,46 +149,34 @@ rm -rf install_server.sh
 }
 
 inscertificate(){
-green "一、hysteria协议证书申请方式选择如下:"
+green "hysteria协议证书申请方式选择如下:"
 readp "1. www.bing.com自签证书（回车默认）\n2. acme一键申请证书（支持常规80端口模式与dns api模式）\n请选择：" certificate
 if [ -z "${certificate}" ] || [ $certificate == "1" ];then
-if [[ -f /etc/hysteria/cert.crt && -f /etc/hysteria/private.key ]]; then
-ym=www.bing.com
-certificatep='/etc/hysteria/private.key'
-certificatec='/etc/hysteria/cert.crt'
-blue "经检测，之前已申请过自签证书，已直接引用\n"
-else
 openssl ecparam -genkey -name prime256v1 -out /etc/hysteria/private.key
 openssl req -new -x509 -days 36500 -key /etc/hysteria/private.key -out /etc/hysteria/cert.crt -subj "/CN=www.bing.com"
 ym=www.bing.com
 certificatep='/etc/hysteria/private.key'
 certificatec='/etc/hysteria/cert.crt'
-fi
 blue "已确认证书模式: www.bing.com自签证书\n"
 elif [ $certificate == "2" ];then
 if [[ -f /root/cert.crt && -f /root/private.key ]] && [[ -s /root/cert.crt && -s /root/private.key ]]; then
-certificatep='/root/private.key'
-certificatec='/root/cert.crt'
 blue "经检测，之前已申请过acme证书，可直接引用\n"
 readp "请输入已申请过acme证书域名:" ym
 echo ${ym} > /etc/hysteria/ca.log
 blue "输入的域名：$ym，已直接引用\n"
 else
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-if [[ -f /root/private.key && -f /root/cert.crt ]]; then
+ym=$(cat /etc/hysteria/ca.log)
+fi
 certificatep='/root/private.key'
 certificatec='/root/cert.crt'
-else
-red "证书申请未成功或者证书不存在" && exit
-fi
-fi
 else 
 red "输入错误，请重新选择" && inscertificate
 fi
 }
 
 inspr(){
-green "二、hysteria的传输协议选择如下:"
+green "hysteria的传输协议选择如下:"
 readp "1. udp（回车默认，推荐）\n2. wechat-video（推荐）\n3. faketcp（仅支持linux客户端且需要root权限）\n请选择：" protocol
 if [ -z "${protocol}" ] || [ $protocol == "1" ];then
 hysteria_protocol="udp"
@@ -192,7 +192,7 @@ blue "已确认传输协议: ${hysteria_protocol}\n"
 }
 
 insport(){
-readp "三、hysteria端口设置[1-65535]（回车跳过为2000-65535之间的随机端口）：" port
+readp "hysteria端口设置[1-65535]（回车跳过为2000-65535之间的随机端口）：" port
 if [[ -z $port ]]; then
 port=$(shuf -i 2000-65535 -n 1)
 until [[ -z $(ss -ntlp | awk '{print $4}' | grep -w "$port") ]]
@@ -209,7 +209,7 @@ blue "已确认端口：$port\n"
 }
 
 inspswd(){
-readp "四、hysteria设置验证密码（回车跳过为随机6位字符）：" pswd
+readp "hysteria设置验证密码（回车跳过为随机6位字符）：" pswd
 if [[ -z ${pswd} ]]; then
 pswd=`date +%s%N |md5sum | cut -c 1-6`
 fi
@@ -223,7 +223,7 @@ blue "已确认验证密码：${pswd}\n"
 }
 
 insconfig(){
-green "五、设置配置文件中……，稍等5秒"
+green "设置配置文件中……，稍等5秒"
 mkdir -p /root/HY/acl
 v4=$(curl -s4m5 https://ip.gs -k)
 [[ -z $v4 ]] && rpip=64 || rpip=46
@@ -372,23 +372,18 @@ blue "当前正在使用的协议：$noprotocol"
 echo
 inspr
 sed -i "s/$noprotocol/$hysteria_protocol/g" /etc/hysteria/config.json
-sed -i "s/$noprotocol/$hysteria_protocol/g" /root/HY/acl/v2rayn.json
+sed -i "3s/$noprotocol/$hysteria_protocol/g" /root/HY/acl/v2rayn.json
 sed -i "s/$noprotocol/$hysteria_protocol/g" /root/HY/URL.txt
 systemctl restart hysteria-server
-blue "hysteria代理服务的协议已由 $noprotocol 更换为 $hysteria_protocol "
-green "v2rayn客户端配置文件已更新，保存到 /root/HY/acl/v2rayn.json\n"
-yellow "$(cat /root/HY/acl/v2rayn.json)\n"
-green "分享链接已更新，保存到 /root/HY/URL.txt"
-yellow "$(cat /root/HY/URL.txt)"
+blue "hysteria代理服务的协议已由 $noprotocol 更换为 $hysteria_protocol ，配置已更新 "
+hysteriashare
 }
 
 changecertificate(){
 if [[ -z $(systemctl status hysteria-server 2>/dev/null | grep -w active) || ! -f '/etc/hysteria/config.json' ]]; then
 red "未正常安装hysteria!" && exit
 fi
-
 certclient(){
-servername=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server_name | awk '{print $2}' | awk -F '"' '{ print $2}'`
 sureipadress(){
 ip=$(curl -s6m5 https://ip.gs -k) || ip=$(curl -s4m5 https://ip.gs -k)
 certificate=`cat /etc/hysteria/config.json 2>/dev/null | grep cert | awk '{print $2}' | awk -F '"' '{ print $2}'`
@@ -401,7 +396,6 @@ fi
 else
 oldserver=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server | awk '{print $2}' | awk -F '"' '{ print $2}'| cut -d ':' -f 1`
 fi
-
 if [[ $certificate = '/etc/hysteria/cert.crt' ]]; then
 ym=$(cat /etc/hysteria/ca.log)
 ymip=$(cat /etc/hysteria/ca.log)
@@ -410,58 +404,81 @@ ym=www.bing.com
 ymip=$ip
 fi
 }
-wgcfv6=$(curl -s6m5 https://www.cloudflare.com/cdn-cgi/trace -k | grep warp | cut -d= -f2)
-wgcfv4=$(curl -s4m5 https://www.cloudflare.com/cdn-cgi/trace -k | grep warp | cut -d= -f2)
-if [[ ! $wgcfv4 =~ on|plus && ! $wgcfv6 =~ on|plus ]]; then
-sureipadress
-else
-systemctl stop wg-quick@wgcf >/dev/null 2>&1
-sureipadress
-systemctl start wg-quick@wgcf >/dev/null 2>&1
-fi
+wgcfgo
 }
-
+servername=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server_name | awk '{print $2}' | awk -F '"' '{ print $2}'`
 certificate=`cat /etc/hysteria/config.json 2>/dev/null | grep cert | awk '{print $2}' | awk -F '"' '{ print $2}'`
 if [[ $certificate = '/etc/hysteria/cert.crt' ]]; then
 certificatepp='/etc/hysteria/private.key'
 certificatecc='/etc/hysteria/cert.crt'
-blue "当前正在使用的证书：自签bing证书，可更换为acme申请的证书"
+blue "当前正在使用的证书：bing自签证书，可更换为acme申请的证书"
 echo
-inscertificate
+readp "是否切换？（回车为是。其他选择为否，并返回主菜单）\n请选择：" choose
+if [ -z "${choose}" ]; then
+if [[ -f /root/cert.crt && -f /root/private.key ]]; then
+blue "经检测，之前已申请过acme证书，可直接引用\n"
+readp "请输入已申请过acme证书域名:" ym
+echo ${ym} > /etc/hysteria/ca.log
+blue "输入的域名：$ym，已直接引用\n"
+else
+wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
+ym=$(cat /etc/hysteria/ca.log)
+fi
+certificatep='/root/private.key'
+certificatec='/root/cert.crt'
 certclient
 sed -i '21s/true/false/g' /root/HY/acl/v2rayn.json
 sed -i 's/true/false/g' /root/HY/URL.txt
 else
+hy
+fi
+else
 certificatepp='/root/private.key'
 certificatecc='/root/cert.crt'
-blue "当前正在使用的证书：acme申请的证书，可更换为自签bing证书"
+blue "当前正在使用的证书：acme申请的证书，可更换为bing自签证书"
 echo
-inscertificate
+readp "是否切换？（回车为是。其他选择为否，并返回主菜单）\n请选择：" choose
+if [ -z "${choose}" ]; then
+if [[ -f /etc/hysteria/cert.crt && -f /etc/hysteria/private.key ]]; then
+ym=www.bing.com
+blue "经检测，之前已申请过自签证书，已直接引用\n"
+else
+openssl ecparam -genkey -name prime256v1 -out /etc/hysteria/private.key
+openssl req -new -x509 -days 36500 -key /etc/hysteria/private.key -out /etc/hysteria/cert.crt -subj "/CN=www.bing.com"
+ym=www.bing.com
+fi
+certificatep='/etc/hysteria/private.key'
+certificatec='/etc/hysteria/cert.crt'
 certclient
 sed -i '21s/false/true/g' /root/HY/acl/v2rayn.json
 sed -i 's/false/true/g' /root/HY/URL.txt
+else
+hy
+fi
 fi
 
+sureipadress(){
 if [[ $certificate = '/etc/hysteria/cert.crt' && -n $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/\[$oldserver\]/${ymip}/g" /root/HY/acl/v2rayn.json
 sed -i "s/\[$oldserver\]/${ymip}/g" /root/HY/URL.txt
-sed -i "s/$servername/$ym/g" /root/HY/acl/v2rayn.json
-sed -i "s/$servername/$ym/g" /root/HY/URL.txt
 elif [[ $certificate = '/root/cert.crt' && -n $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/$oldserver/\[${ymip}\]/g" /root/HY/acl/v2rayn.json
-sed -i "s/$oldserver/\[${ymip}\]/g" /root/HY/URL.txt
-sed -i "s/$servername/$ym/g" /root/HY/acl/v2rayn.json
-sed -i "s/$servername/$ym/g" /root/HY/URL.txt
-else
-sed -i "s/$oldserver/${ymip}/g" /root/HY/acl/v2rayn.json
-sed -i "s/$servername/$ym/g" /root/HY/acl/v2rayn.json
+sed -i "s/$oldserver/\[${ymip}\]" /root/HY/URL.txt
+elif [[ $certificate = '/root/cert.crt' && -z $(curl -s6m5 https://ip.gs -k) ]]; then
+sed -i "2s/$oldserver/${ymip}/g" /root/HY/acl/v2rayn.json
+sed -i "s/$oldserver/${ymip}" /root/HY/URL.txt
+elif [[ $certificate = '/etc/hysteria/cert.crt' && -z $(curl -s6m5 https://ip.gs -k) ]]; then
+sed -i "2s/$oldserver/${ymip}/g" /root/HY/acl/v2rayn.json
 sed -i "s/$oldserver/${ymip}/g" /root/HY/URL.txt
-sed -i "s/$servername/$ym/g" /root/HY/URL.txt
 fi
-
+}
+wgcfgo
+sed -i "s/$servername/$ym/g" /root/HY/acl/v2rayn.json
+sed -i "s/$servername/$ym/g" /root/HY/URL.txt
 sed -i "s!$certificatepp!$certificatep!g" /etc/hysteria/config.json
 sed -i "s!$certificatecc!$certificatec!g" /etc/hysteria/config.json
 systemctl restart hysteria-server
+hysteriashare
 }
 
 changeip(){
@@ -484,6 +501,60 @@ sed -i "4s/$rpip/$rrpip/g" /etc/hysteria/config.json
 systemctl restart hysteria-server
 [[ $rrpip = 46 ]] && v4v6="IPV4优先：$(curl -s4 https://ip.gs -k)" || v4v6="IPV6优先：$(curl -s6 https://ip.gs -k)"
 blue "确定当前已更换的IP优先级：${v4v6}\n"
+}
+
+changepswd(){
+if [[ -z $(systemctl status hysteria-server 2>/dev/null | grep -w active) || ! -f '/etc/hysteria/config.json' ]]; then
+red "未正常安装hysteria!" && exit
+fi
+oldpswd=`cat /etc/hysteria/config.json 2>/dev/null | grep -w password | grep -a 2 | awk '{print $2}' | awk -F '"' '{ print $2}'`
+echo
+blue "当前正在使用的验证密码：$oldpswd"
+echo
+inspswd
+sed -i "8s/$oldpswd/$pswd/g" /etc/hysteria/config.json
+sed -i "19s/$oldpswd/$pswd/g" /root/HY/acl/v2rayn.json
+sed -i "s/$oldpswd/$pswd/g" /root/HY/URL.txt
+systemctl restart hysteria-server
+blue "hysteria代理服务的验证密码已由 $oldpswd 更换为 $pswd ，配置已更新 "
+hysteriashare
+}
+
+changeport(){
+if [[ -z $(systemctl status hysteria-server 2>/dev/null | grep -w active) || ! -f '/etc/hysteria/config.json' ]]; then
+red "未正常安装hysteria!" && exit
+fi
+oldport=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server | awk '{print $2}' | awk -F '"' '{ print $2}'| awk -F ':' '{ print $NF}'`
+echo
+blue "当前正在使用的端口：$oldport"
+echo
+insport
+sed -i "2s/$oldport/$port/g" /etc/hysteria/config.json
+sed -i "2s/$oldport/$port/g" /root/HY/acl/v2rayn.json
+sed -i "s/$oldport/$port/g" /root/HY/URL.txt
+systemctl restart hysteria-server
+blue "hysteria代理服务的端口已由 $oldport 更换为 $port ，配置已更新 "
+hysteriashare
+}
+
+changeserv(){
+green "hysteria配置变更选择如下:"
+readp "1. 切换IPV4/IPV6出站优先级\n2. 切换传输协议类型\n3. 切换证书类型\n4. 更换验证密码\n5. 更换端口\n6. 返回上层\n请选择：" choose
+if [ $choose == "1" ];then
+changeip
+elif [ $choose == "2" ];then
+changepr
+elif [ $choose == "3" ];then
+changecertificate
+elif [ $choose == "4" ];then
+changepswd
+elif [ $choose == "5" ];then
+changeport
+elif [ $choose == "6" ];then
+hy
+else 
+red "请重新选择" && changeserv
+fi
 }
 
 inshysteria(){
@@ -515,19 +586,10 @@ else
 ymip=$(cat /etc/hysteria/ca.log)
 fi
 }
-
-wgcfv6=$(curl -s6m5 https://www.cloudflare.com/cdn-cgi/trace -k | grep warp | cut -d= -f2) 
-wgcfv4=$(curl -s4m5 https://www.cloudflare.com/cdn-cgi/trace -k | grep warp | cut -d= -f2)
-if [[ ! $wgcfv4 =~ on|plus && ! $wgcfv6 =~ on|plus ]]; then 
-sureipadress
-else
-systemctl stop wg-quick@wgcf >/dev/null 2>&1
-sureipadress
-systemctl start wg-quick@wgcf >/dev/null 2>&1
-fi
-url="hysteria://${ymip}:${port}?protocol=${hysteria_protocol}&auth=${pswd}&peer=${ym}&insecure=${ins}&upmbps=1000&downmbps=1000&alpn=h3#HY-${ymip}"
+wgcfgo
+url="hysteria://${ymip}:${port}?protocol=${hysteria_protocol}&auth=${pswd}&peer=${ym}&insecure=${ins}&upmbps=1000&downmbps=1000&alpn=h3#hysteria-ygkkk"
 echo ${url} > /root/HY/URL.txt
-green "六、hysteria代理服务安装完成，生成脚本的快捷方式为 hy"
+green "hysteria代理服务安装完成，生成脚本的快捷方式为 hy"
 blue "v2rayn客户端配置文件v2rayn.json及代理规则文件保存到 /root/HY/acl\n"
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
 blue "分享链接保存到 /root/HY/URL.txt"
@@ -546,8 +608,10 @@ noprotocol=`cat /etc/hysteria/config.json 2>/dev/null | grep protocol | awk '{pr
 rpip=`cat /etc/hysteria/config.json 2>/dev/null | grep resolve_preference | awk '{print $2}' | awk -F '"' '{ print $2}'`
 [[ $rpip = 64 ]] && v4v6="IPV6优先：$(curl -s6 https://ip.gs -k)" || v4v6="IPV4优先：$(curl -s4 https://ip.gs -k)"
 status=$(white "hysteria状态：\c";green "运行中";white "hysteria协议：\c";green "$noprotocol";white "优先出站IP：  \c";green "$v4v6";white "WARP状态：    \c";eval echo \$wgcf)
+elif [[ -z $(systemctl status hysteria-server 2>/dev/null | grep -w active) && -f '/etc/hysteria/config.json' ]]; then
+status=$(white "hysteria状态：\c";yellow "未启动,可尝试选择4，开启或者重启hysteria";white "WARP状态：    \c";eval echo \$wgcf)
 else
-status=$(white "hysteria状态：\c";red "未启动";white "WARP状态：    \c";eval echo \$wgcf)
+status=$(white "hysteria状态：\c";red "未安装";white "WARP状态：    \c";eval echo \$wgcf)
 fi
 }
 
@@ -555,9 +619,9 @@ hysteriashare(){
 if [[ -z $(systemctl status hysteria-server 2>/dev/null | grep -w active) || ! -f '/etc/hysteria/config.json' ]]; then
 red "未正常安装hysteria!" && exit
 fi
-green "当前v2rayn客户端配置文件v2rayn.json内容如下\n"
+green "当前v2rayn客户端配置文件v2rayn.json内容如下，保存到 /root/HY/acl/v2rayn.json\n"
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
-green "当前hysteria节点分享链接如下："
+green "当前hysteria节点分享链接如下，保存到 /root/HY/URL.txt："
 yellow "$(cat /root/HY/URL.txt)"
 }
 
@@ -577,20 +641,18 @@ white "甬哥blogger博客 ：ygkkk.blogspot.com"
 white "甬哥YouTube频道 ：www.youtube.com/c/甬哥侃侃侃kkkyg"
 green "hysteria-yg脚本安装成功后，再次进入脚本的快捷方式为 hy"
 red "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-green "  1. 安装hysteria（必选）" 
-green "  2. 卸载hysteria"
+green " 1. 安装hysteria（必选）" 
+green " 2. 卸载hysteria"
 white "----------------------------------------------------------------------------------"
-green "  3. 更换当前协议类型" 
-green "  4. 切换IPV4/IPV6出站优先级"
-green "  5. 更换当前证书类型"
-green "  6. 关闭、开启、重启hysteria"   
-green "  7. 更新hysteria-yg安装脚本"  
-green "  8. 更新hysteria内核"
+green " 3. 五种配置快速变更(IP优先级、传输协议、证书类型、验证密码、端口)" 
+green " 4. 关闭、开启、重启hysteria"   
+green " 5. 更新hysteria-yg安装脚本"  
+green " 6. 更新hysteria内核"
 white "----------------------------------------------------------------------------------"
-green "  9. 显示hysteria分享链接与V2rayN配置文件"
-green " 10. 安装warp（可选）"
-green " 11. 安装BBR+FQ加速（可选）"
-green "  0. 退出脚本"
+green " 7. 显示hysteria分享链接与V2rayN配置文件"
+green " 8. 安装warp（可选）"
+green " 9. 安装BBR+FQ加速（可选）"
+green " 0. 退出脚本"
 red "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 if [[ -n $(systemctl status hysteria-server 2>/dev/null | grep -w active) && -f '/etc/hysteria/config.json' ]]; then
 if [ "${hyygV}" = "${remoteV}" ]; then
@@ -616,15 +678,13 @@ readp "请输入数字:" Input
 case "$Input" in     
  1 ) inshysteria;;
  2 ) unins;;
- 3 ) changepr;;
- 4 ) changeip;;
- 5 ) changecertificate;;
- 6 ) stclre;;
- 7 ) uphyyg;; 
- 8 ) uphysteriacore;;
- 9 ) hysteriashare;;
-10 ) cfwarp;;
-11 ) bbr;;
+ 3 ) changeserv;;
+ 4 ) stclre;;
+ 5 ) uphyyg;; 
+ 6 ) uphysteriacore;;
+ 7 ) hysteriashare;;
+ 8 ) cfwarp;;
+ 9 ) bbr;;
  * ) exit 
 esac
 }
