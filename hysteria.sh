@@ -397,11 +397,11 @@ else
 oldserver=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server | awk '{print $2}' | awk -F '"' '{ print $2}'| cut -d ':' -f 1`
 fi
 if [[ $certificate = '/etc/hysteria/cert.crt' ]]; then
-ym=$(cat /etc/hysteria/ca.log)
-ymip=$(cat /etc/hysteria/ca.log)
-else
 ym=www.bing.com
 ymip=$ip
+else
+ym=$(cat /etc/hysteria/ca.log)
+ymip=$(cat /etc/hysteria/ca.log)
 fi
 }
 wgcfgo
