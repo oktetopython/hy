@@ -1,5 +1,5 @@
 #!/bin/bash
-hyygV="22.7.29 V 2.5"
+hyygV="22.7.31 V 2.6"
 remoteV=`wget -qO- https://gitlab.com/rwkgyg/hysteria-yg/raw/main/hysteria.sh | sed  -n 2p | cut -d '"' -f 2`
 red='\033[0;31m'
 bblue='\033[0;34m'
@@ -270,7 +270,7 @@ cat <<EOF > /root/HY/acl/v2rayn.json
 {
 "server": "${ymip}:${port}",
 "protocol": "${hysteria_protocol}",
-"up_mbps": 125,
+"up_mbps": 200,
 "down_mbps": 1000,
 "alpn": "h3",
 "acl": "acl/routes.acl",
@@ -587,7 +587,7 @@ ymip=$(cat /etc/hysteria/ca.log)
 fi
 }
 wgcfgo
-url="hysteria://${ymip}:${port}?protocol=${hysteria_protocol}&auth=${pswd}&peer=${ym}&insecure=${ins}&upmbps=125&downmbps=1000&alpn=h3#hysteria-ygkkk"
+url="hysteria://${ymip}:${port}?protocol=${hysteria_protocol}&auth=${pswd}&peer=${ym}&insecure=${ins}&upmbps=200&downmbps=1000&alpn=h3#hysteria-ygkkk"
 echo ${url} > /root/HY/URL.txt
 green "hysteria代理服务安装完成，生成脚本的快捷方式为 hy"
 blue "v2rayn客户端配置文件v2rayn.json及代理规则文件保存到 /root/HY/acl\n"
