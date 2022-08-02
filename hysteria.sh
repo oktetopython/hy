@@ -151,19 +151,29 @@ rm -rf install_server.sh
 inscertificate(){
 green "hysteria协议证书申请方式选择如下:"
 readp "1. www.bing.com自签证书（回车默认）\n2. acme一键申请证书（支持常规80端口模式与dns api模式）\n请选择：" certificate
-if [ -z "${certificate}" ] || [ $certificate == "1" ];then
+if [ -z "${certificate}" ] || [ $certificate == "1" ]; then
 openssl ecparam -genkey -name prime256v1 -out /etc/hysteria/private.key
 openssl req -new -x509 -days 36500 -key /etc/hysteria/private.key -out /etc/hysteria/cert.crt -subj "/CN=www.bing.com"
 ym=www.bing.com
 certificatep='/etc/hysteria/private.key'
 certificatec='/etc/hysteria/cert.crt'
 blue "已确认证书模式: www.bing.com自签证书\n"
-elif [ $certificate == "2" ];then
+elif [ $certificate == "2" ]; then
 if [[ -f /root/cert.crt && -f /root/private.key ]] && [[ -s /root/cert.crt && -s /root/private.key ]]; then
-blue "经检测，之前已申请过acme证书，可直接引用\n"
-readp "请输入已申请过acme证书域名:" ym
+blue "经检测，之前已申请过acme证书"
+readp "1. 直接使用原来的证书（回车默认）\n2. 删除原来的证书，重新申请证书\n请选择：" certacme
+if [ -z "${certacme}" ] || [ $certacme == "1" ]; then
+readp "请输入已申请过的acme证书域名:" ym
 echo ${ym} > /etc/hysteria/ca.log
 blue "输入的域名：$ym，已直接引用\n"
+elif [ $certificate == "2" ]; then
+rm -rf /root/cert.crt /root/private.key
+wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
+ym=$(cat /etc/hysteria/ca.log)
+if [[ ! -f /root/cert.crt && ! -f /root/private.key ]] || [[ ! -s /root/cert.crt && ! -s /root/private.key ]]; then
+red "域名申请失败，脚本退出" && exit
+fi
+fi
 else
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
 ym=$(cat /etc/hysteria/ca.log)
