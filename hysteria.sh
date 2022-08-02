@@ -167,6 +167,9 @@ blue "输入的域名：$ym，已直接引用\n"
 else
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
 ym=$(cat /etc/hysteria/ca.log)
+if [[ ! -f /root/cert.crt && ! -f /root/private.key ]] || [[ ! -s /root/cert.crt && ! -s /root/private.key ]]; then
+red "域名申请失败，脚本退出" && exit
+fi
 fi
 certificatep='/root/private.key'
 certificatec='/root/cert.crt'
