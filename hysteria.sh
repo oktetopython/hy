@@ -166,7 +166,7 @@ if [ -z "${certacme}" ] || [ $certacme == "1" ]; then
 readp "请输入已申请过的acme证书域名:" ym
 echo ${ym} > /etc/hysteria/ca.log
 blue "输入的域名：$ym，已直接引用\n"
-elif [ $certificate == "2" ]; then
+elif [ $certacme == "2" ]; then
 rm -rf /root/cert.crt /root/private.key
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
 ym=$(cat /etc/hysteria/ca.log)
@@ -435,7 +435,7 @@ if [ -z "${certacme}" ] || [ $certacme == "1" ]; then
 readp "请输入已申请过的acme证书域名:" ym
 echo ${ym} > /etc/hysteria/ca.log
 blue "输入的域名：$ym，已直接引用\n"
-elif [ $certificate == "2" ]; then
+elif [ $certacme == "2" ]; then
 rm -rf /root/cert.crt /root/private.key
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
 ym=$(cat /etc/hysteria/ca.log)
