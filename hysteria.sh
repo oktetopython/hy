@@ -428,14 +428,27 @@ blue "当前正在使用的证书：bing自签证书，可更换为acme申请的
 echo
 readp "是否切换？（回车为是。其他选择为否，并返回主菜单）\n请选择：" choose
 if [ -z "${choose}" ]; then
-if [[ -f /root/cert.crt && -f /root/private.key ]]; then
-blue "经检测，之前已申请过acme证书，可直接引用\n"
-readp "请输入已申请过acme证书域名:" ym
+if [[ -f /root/cert.crt && -f /root/private.key ]] && [[ -s /root/cert.crt && -s /root/private.key ]]; then
+blue "经检测，之前已申请过acme证书"
+readp "1. 直接使用原来的证书（回车默认）\n2. 删除原来的证书，重新申请证书\n请选择：" certacme
+if [ -z "${certacme}" ] || [ $certacme == "1" ]; then
+readp "请输入已申请过的acme证书域名:" ym
 echo ${ym} > /etc/hysteria/ca.log
 blue "输入的域名：$ym，已直接引用\n"
+elif [ $certificate == "2" ]; then
+rm -rf /root/cert.crt /root/private.key
+wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
+ym=$(cat /etc/hysteria/ca.log)
+if [[ ! -f /root/cert.crt && ! -f /root/private.key ]] && [[ ! -s /root/cert.crt && ! -s /root/private.key ]]; then
+red "域名申请失败，脚本退出" && exit
+fi
+fi
 else
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
 ym=$(cat /etc/hysteria/ca.log)
+if [[ ! -f /root/cert.crt && ! -f /root/private.key ]] && [[ ! -s /root/cert.crt && ! -s /root/private.key ]]; then
+red "域名申请失败，脚本退出" && exit
+fi
 fi
 certificatep='/root/private.key'
 certificatec='/root/cert.crt'
