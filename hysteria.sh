@@ -1,5 +1,5 @@
 #!/bin/bash
-hyygV="22.7.31 V 2.6"
+hyygV="22.8.3 V 3.0"
 remoteV=`wget -qO- https://gitlab.com/rwkgyg/hysteria-yg/raw/main/hysteria.sh | sed  -n 2p | cut -d '"' -f 2`
 red='\033[0;31m'
 bblue='\033[0;34m'
@@ -161,7 +161,7 @@ blue "已确认证书模式: www.bing.com自签证书\n"
 elif [ $certificate == "2" ]; then
 if [[ -f /root/cert.crt && -f /root/private.key ]] && [[ -s /root/cert.crt && -s /root/private.key ]]; then
 blue "经检测，之前已申请过acme证书"
-readp "1. 直接使用原来的证书（回车默认）\n2. 删除原来的证书，重新申请证书\n请选择：" certacme
+readp "1. 直接使用原来的证书，默认root路径，可支持自定义上传证书（回车默认）\n2. 删除原来的证书，重新申请acme证书\n请选择：" certacme
 if [ -z "${certacme}" ] || [ $certacme == "1" ]; then
 readp "请输入已申请过的acme证书域名:" ym
 echo ${ym} > /etc/hysteria/ca.log
@@ -430,7 +430,7 @@ readp "是否切换？（回车为是。其他选择为否，并返回主菜单�
 if [ -z "${choose}" ]; then
 if [[ -f /root/cert.crt && -f /root/private.key ]] && [[ -s /root/cert.crt && -s /root/private.key ]]; then
 blue "经检测，之前已申请过acme证书"
-readp "1. 直接使用原来的证书（回车默认）\n2. 删除原来的证书，重新申请证书\n请选择：" certacme
+readp "1. 直接使用原来的证书，默认root路径，可支持自定义上传证书（回车默认）\n2. 删除原来的证书，重新申请acme证书\n请选择：" certacme
 if [ -z "${certacme}" ] || [ $certacme == "1" ]; then
 readp "请输入已申请过的acme证书域名:" ym
 echo ${ym} > /etc/hysteria/ca.log
