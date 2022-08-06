@@ -93,6 +93,7 @@ fi
 [[ $(type -P yum) ]] && yumapt='yum -y' || yumapt='apt -y'
 [[ $(type -P curl) ]] || (yellow "检测到curl未安装，升级安装中" && $yumapt update;$yumapt install curl)
 [[ $(type -P lsof) ]] || (yellow "检测到lsof未安装，升级安装中" && $yumapt update;$yumapt install lsof)
+[[ $(type -P qrencode) ]] || $yumapt install qrencode
 [[ ! $(type -P python3) ]] && (yellow "检测到python3未安装，升级安装中" && $yumapt update;$yumapt install python3)
 if [[ -z $(grep 'DiG 9' /etc/hosts) ]]; then
 v4=$(curl -s4m5 https://ip.gs -k)
@@ -620,6 +621,8 @@ blue "v2rayn客户端配置文件v2rayn.json及代理规则文件保存到 /root
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
 blue "分享链接保存到 /root/HY/URL.txt"
 yellow "${url}"
+green "二维码分享链接如下（仅支持Shadowrocket小火箭）
+qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
 else
 red "hysteria代理服务安装失败，请运行 systemctl status hysteria-server 查看服务日志" && exit
 fi
@@ -649,6 +652,8 @@ green "当前v2rayn客户端配置文件v2rayn.json内容如下，保存到 /roo
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
 green "当前hysteria节点分享链接如下，保存到 /root/HY/URL.txt："
 yellow "$(cat /root/HY/URL.txt)"
+green "当前hysteria节点二维码分享链接如下（仅支持Shadowrocket小火箭）
+qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
 }
 
 start_menu(){
