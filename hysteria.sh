@@ -621,7 +621,7 @@ blue "v2rayn客户端配置文件v2rayn.json及代理规则文件保存到 /root
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
 blue "分享链接保存到 /root/HY/URL.txt"
 yellow "${url}"
-green "二维码分享链接如下（仅支持Shadowrocket小火箭）"
+green "二维码分享链接如下"
 qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
 else
 red "hysteria代理服务安装失败，请运行 systemctl status hysteria-server 查看服务日志" && exit
@@ -652,7 +652,7 @@ green "当前v2rayn客户端配置文件v2rayn.json内容如下，保存到 /roo
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
 green "当前hysteria节点分享链接如下，保存到 /root/HY/URL.txt："
 yellow "$(cat /root/HY/URL.txt)"
-green "当前hysteria节点二维码分享链接如下（仅支持Shadowrocket小火箭）"
+green "当前hysteria节点二维码分享链接如下"
 qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
 }
 
@@ -675,7 +675,7 @@ red "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 green " 1. 安装hysteria（必选）" 
 green " 2. 卸载hysteria"
 white "----------------------------------------------------------------------------------"
-green " 3. 五种配置快速变更(IP优先级、传输协议、证书类型、验证密码、端口)" 
+green " 3. 五种配置快速变更(IP优先级、传输协议、证书类型(支持自定义证书)、验证密码、端口)" 
 green " 4. 关闭、开启、重启hysteria"   
 green " 5. 更新hysteria-yg安装脚本"  
 green " 6. 更新hysteria内核"
