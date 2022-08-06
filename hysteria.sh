@@ -620,7 +620,7 @@ green "hysteria代理服务安装完成，生成脚本的快捷方式为 hy"
 blue "v2rayn客户端配置文件v2rayn.json及代理规则文件保存到 /root/HY/acl\n"
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
 blue "分享链接保存到 /root/HY/URL.txt"
-yellow "${url}"
+yellow "${url}\n"
 green "二维码分享链接如下"
 qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
 else
@@ -651,7 +651,7 @@ fi
 green "当前v2rayn客户端配置文件v2rayn.json内容如下，保存到 /root/HY/acl/v2rayn.json\n"
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
 green "当前hysteria节点分享链接如下，保存到 /root/HY/URL.txt："
-yellow "$(cat /root/HY/URL.txt)"
+yellow "$(cat /root/HY/URL.txt)\n"
 green "当前hysteria节点二维码分享链接如下"
 qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
 }
