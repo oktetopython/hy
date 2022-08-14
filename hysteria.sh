@@ -325,6 +325,7 @@ wget -N https://gitlab.com/rwkgyg/hysteria-yg/raw/main/install_server.sh && bash
 systemctl restart hysteria-server
 VERSION="$(/usr/local/bin/hysteria -v | awk 'NR==1 {print $3}')"
 blue "当前hysteria内核版本号：$VERSION"
+rm -rf install_server.sh
 }
 
 stclre(){
