@@ -6,7 +6,7 @@ from datetime import date,datetime
 start = datetime.now()
 print(f'{date.today().strftime("%B %d, %Y")},Loading...\n')
 urllib.request.urlretrieve(
-    'https://raw.githubusercontent.com/Loyalsoldier/geoip@release/Country.mmdb', './Country.mmdb'
+    'https://cdn.jsdelivr.net/gh/Loyalsoldier/geoip@release/Country.mmdb', './Country.mmdb'
 )
 
 domain_direct = urllib.request.urlopen(
