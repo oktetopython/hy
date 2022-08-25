@@ -284,8 +284,8 @@ cat <<EOF > /root/HY/acl/v2rayn.json
 {
 "server": "${ymip}:${port}",
 "protocol": "${hysteria_protocol}",
-"up_mbps": 200,
-"down_mbps": 1000,
+"up_mbps": 40,
+"down_mbps": 200,
 "alpn": "h3",
 "acl": "acl/routes.acl",
 "mmdb": "acl/Country.mmdb",
@@ -615,7 +615,7 @@ ymip=$(cat /etc/hysteria/ca.log)
 fi
 }
 wgcfgo
-url="hysteria://${ymip}:${port}?protocol=${hysteria_protocol}&auth=${pswd}&peer=${ym}&insecure=${ins}&upmbps=200&downmbps=1000&alpn=h3#hysteria-ygkkk"
+url="hysteria://${ymip}:${port}?protocol=${hysteria_protocol}&auth=${pswd}&peer=${ym}&insecure=${ins}&upmbps=40&downmbps=200&alpn=h3#hysteria-ygkkk"
 echo ${url} > /root/HY/URL.txt
 green "hysteria代理服务安装完成，生成脚本的快捷方式为 hy"
 blue "v2rayn客户端配置文件v2rayn.json及代理规则文件保存到 /root/HY/acl\n"
