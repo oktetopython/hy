@@ -1,5 +1,5 @@
 #!/bin/bash
-hyygV="22.8.6 V 3.2"
+hyygV="22.8.29 V 3.3"
 remoteV=`wget -qO- https://gitlab.com/rwkgyg/hysteria-yg/raw/main/hysteria.sh | sed  -n 2p | cut -d '"' -f 2`
 red='\033[0;31m'
 bblue='\033[0;34m'
@@ -57,13 +57,6 @@ fi
 }
 
 start(){
-if [[ -n $(sysctl net.ipv4.tcp_congestion_control 2>/dev/null | awk -F ' ' '{print $3}') ]]; then
-bbr=`sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}'`
-elif [[ -n $(ping 10.0.0.2 -c 2 | grep ttl) ]]; then
-bbr="openvz版bbr-plus"
-else
-bbr="暂不支持显示"
-fi
 if [[ $vi = openvz ]]; then
 TUN=$(cat /dev/net/tun 2>&1)
 if [[ ! $TUN =~ 'in bad state' ]] && [[ ! $TUN =~ '处于错误状态' ]] && [[ ! $TUN =~ 'Die Dateizugriffsnummer ist in schlechter Verfassung' ]]; then 
@@ -369,12 +362,6 @@ green "安装脚本升级成功"
 
 cfwarp(){
 wget -N --no-check-certificate https://gitlab.com/rwkgyg/cfwarp/raw/main/CFwarp.sh && bash CFwarp.sh
-
-}
-
-bbr(){
-bash <(curl -L -s https://raw.githubusercontent.com/teddysun/across/master/bbr.sh)
-
 }
 
 changepr(){
@@ -683,7 +670,6 @@ green " 6. 更新hysteria内核"
 white "----------------------------------------------------------------------------------"
 green " 7. 显示hysteria分享链接与V2rayN配置文件"
 green " 8. 安装warp（可选）"
-green " 9. 安装BBR+FQ加速（可选）"
 green " 0. 退出脚本"
 red "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 if [[ -n $(systemctl status hysteria-server 2>/dev/null | grep -w active) && -f '/etc/hysteria/config.json' ]]; then
@@ -703,7 +689,7 @@ yellow "检测到最新hysteria内核版本号：${hyVERSION} ，可选择6进�
 fi
 fi
 white "VPS系统信息如下："
-white "操作系统:     $(blue "$op")" && white "内核版本:     $(blue "$version")" && white "CPU架构 :     $(blue "$cpu")" && white "虚拟化类型:   $(blue "$vi")" && white "TCP算法:      $(blue "$bbr")"
+white "操作系统:     $(blue "$op")" && white "内核版本:     $(blue "$version")" && white "CPU架构 :     $(blue "$cpu")" && white "虚拟化类型:   $(blue "$vi")"
 white "$status"
 echo
 readp "请输入数字:" Input
@@ -716,7 +702,6 @@ case "$Input" in
  6 ) uphysteriacore;;
  7 ) hysteriashare;;
  8 ) cfwarp;;
- 9 ) bbr;;
  * ) exit 
 esac
 }
