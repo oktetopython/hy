@@ -502,20 +502,22 @@ red "未正常安装hysteria!" && exit
 fi
 ipv6=$(curl -s6m5 https://ip.gs -k) 
 ipv4=$(curl -s4m5 https://ip.gs -k)
-green "切换IPV4/IPV6出站优先级选择如下:"
-readp "1. IPV4优先\n2. IPV6优先\n请选择：" rrpip
-if [[ $rrpip == "1" && -n $ipv4 ]];then
-rrpip="46"
-elif [[ $rrpip == "2" && -n $ipv6 ]];then
-rrpip="64"
-else 
-red "无IPV4/IPV6优先选择项或者输入错误" && changeip
-fi
+chip(){
 rpip=`cat /etc/hysteria/config.json 2>/dev/null | grep resolve_preference | awk '{print $2}' | awk -F '"' '{ print $2}'`
 sed -i "4s/$rpip/$rrpip/g" /etc/hysteria/config.json
 systemctl restart hysteria-server
 [[ $rrpip = 46 ]] && v4v6="IPV4优先：$(curl -s4 https://ip.gs -k)" || v4v6="IPV6优先：$(curl -s6 https://ip.gs -k)"
 blue "确定当前已更换的IP优先级：${v4v6}\n"
+}
+green "切换IPV4/IPV6出站优先级选择如下:"
+readp "1. IPV4优先\n2. IPV6优先\n请选择：" rrpip
+if [[ $rrpip == "1" && -n $ipv4 ]];then
+rrpip="46" && chip
+elif [[ $rrpip == "2" && -n $ipv6 ]];then
+rrpip="64" && chip
+else 
+red "无IPV4/IPV6优先选择项或者输入错误" && changeip
+fi
 }
 
 changepswd(){
