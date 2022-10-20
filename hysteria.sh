@@ -43,6 +43,7 @@ bit=`uname -m`
 [[ $bit = x86_64 ]] && cpu=AMD64
 [[ $bit = aarch64 ]] && cpu=ARM64
 vi=`systemd-detect-virt`
+rm -rf /etc/localtime
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 wgcfgo(){
