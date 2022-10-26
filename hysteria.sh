@@ -642,7 +642,7 @@ red "未正常安装hysteria!" && exit
 fi
 green "当前v2rayn客户端配置文件v2rayn.json内容如下，保存到 /root/HY/acl/v2rayn.json\n"
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
-green "当前hysteria节点分享链接如下，保存到 /root/HY/URL.txt："
+green "当前hysteria节点分享链接如下，保存到 /root/HY/URL.txt"
 yellow "$(cat /root/HY/URL.txt)\n"
 green "当前hysteria节点二维码分享链接如下(SagerNet / Matsuri / 小火箭)"
 qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
