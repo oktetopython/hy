@@ -577,7 +577,7 @@ fi
 }
 
 inshysteria(){
-start ; inshy ; inscertificate ; inspr ; insport ; inspswd
+inshy ; inscertificate ; inspr ; insport ; inspswd
 if [[ ! $vi =~ lxc|openvz ]]; then
 sysctl -w net.core.rmem_max=8000000
 sysctl -p
