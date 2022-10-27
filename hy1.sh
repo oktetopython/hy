@@ -461,6 +461,7 @@ ym=$(cat /root/ygkkkca/ca.log)
 if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
 red "域名申请失败，脚本退出" && exit
 fi
+fi
 certificatep='/root/ygkkkca/private.key'
 certificatec='/root/ygkkkca/cert.crt'
 certclient
