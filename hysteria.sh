@@ -608,7 +608,7 @@ if [[ $certificate = '/etc/hysteria/cert.crt' ]]; then
 ip=$(curl -s6m5 https://ip.gs -k) || ip=$(curl -s4m5 https://ip.gs -k)
 [[ -n $(echo $ip | grep ":") ]] && ymip="[$ip]" || ymip=$ip
 else
-ymip=$(cat /etc/hysteria/ca.log)
+ymip=$(cat /root/ygkkkca/ca.log)
 fi
 }
 wgcfgo
