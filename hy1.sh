@@ -154,7 +154,7 @@ rm -rf install_server.sh
 
 inscertificate(){
 green "hysteria协议证书申请方式选择如下:"
-readp "1. www.bing.com自签证书（回车默认）\n2. acme一键申请证书脚本（支持常规80端口模式与dns api模式），已用此脚本申请的证书则自动识别\n请选择：" certificate
+readp "1. www.bing.com自签证书（回车默认）\n2. acme一键申请证书脚本（支持常规80端口模式与dns api模式），已用此脚本申请的证书则自动识别\n3. 自定义证书路径\n请选择：" certificate
 if [ -z "${certificate}" ] || [ $certificate == "1" ]; then
 openssl ecparam -genkey -name prime256v1 -out /etc/hysteria/private.key
 openssl req -new -x509 -days 36500 -key /etc/hysteria/private.key -out /etc/hysteria/cert.crt -subj "/CN=www.bing.com"
@@ -178,14 +178,24 @@ red "证书申请失败，脚本退出" && exit
 fi
 fi
 else
-wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /root/ygkkkca/ca.log)
-if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
-red "证书申请失败，脚本退出" && exit
-fi
+red "输入错误，请重新选择" && inscertificate
 fi
 certificatep='/root/ygkkkca/private.key'
 certificatec='/root/ygkkkca/cert.crt'
+elif [ $certificate == "3" ]; then
+
+oldcer=`cat /etc/caddy/caddy_server.json 2>/dev/null | grep -w certificate | awk '{print $2}' | awk -F '"' '{ print $2}'| awk -F ',' '{ print $NF}'`
+oldkey=`cat /etc/caddy/caddy_server.json 2>/dev/null | grep -w key | awk '{print $2}' | awk -F '"' '{ print $2}'| awk -F ',' '{ print $NF}'`
+sed -i "s/$oldcer/${certificatec}/g" /etc/hysteria/config.json
+sed -i "s/$oldkey/${certificatep}/g" /etc/hysteria/config.json
+readp "请输入已解析好的域名:" ym
+blue "已解析好的域名：$ym "
+readp "请输入已放置好的公钥文件crt的路径（/a/b/……/cert.crt）：" cerroad
+blue "公钥文件crt的路径：$cerroad "
+readp "请输入已放置好的密钥文件key的路径（/a/b/……/private.key）：" keyroad
+blue "密钥文件key的路径：$keyroad "
+certificatec=$cerroad
+certificatep=$keyroad
 else 
 red "输入错误，请重新选择" && inscertificate
 fi
