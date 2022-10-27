@@ -407,8 +407,8 @@ else
 oldserver=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server | awk '{print $2}' | awk -F '"' '{ print $2}'| cut -d ':' -f 1`
 fi
 if [[ $certificate = '/etc/hysteria/cert.crt' ]]; then
-ym=$(cat /etc/hysteria/ca.log)
-ymip=$(cat /etc/hysteria/ca.log)
+ym=$(cat /root/ygkkkca/ca.log)
+ymip=$(cat /root/ygkkkca/ca.log)
 else
 ym=www.bing.com
 ymip=$ip
@@ -435,7 +435,7 @@ blue "输入的域名：$ym，已直接引用\n"
 elif [ $certacme == "2" ]; then
 rm -rf /root/ygkkkca
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /etc/hysteria/ca.log)
+ym=$(cat /root/ygkkkca/ca.log)
 if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
 red "域名申请失败，脚本退出" && exit
 fi
