@@ -450,16 +450,16 @@ fi
 elif [ $certacme == "2" ]; then
 rm -rf /root/ygkkkca
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /root/ygkkkca/ca.log)
+ym=$(cat /root/ygkkkca/ca.log 2>/dev/null)
 if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
-red "域名申请失败，脚本退出" && exit
+red "证书申请失败，脚本退出" && exit
 fi
 fi
 else
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /root/ygkkkca/ca.log)
+ym=$(cat /root/ygkkkca/ca.log 2>/dev/null)
 if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
-red "域名申请失败，脚本退出" && exit
+red "证书申请失败，脚本退出" && exit
 fi
 fi
 certificatep='/root/ygkkkca/private.key'
