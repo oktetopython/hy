@@ -467,6 +467,7 @@ sed -i 's/true/false/g' /root/HY/URL.txt
 else
 hy
 fi
+fi
 else
 certificatepp='/root/ygkkkca/private.key'
 certificatecc='/root/ygkkkca/cert.crt'
