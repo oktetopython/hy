@@ -456,7 +456,10 @@ red "域名申请失败，脚本退出" && exit
 fi
 fi
 else
-red "输入错误，请重新选择" && changecertificate
+wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
+ym=$(cat /root/ygkkkca/ca.log)
+if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
+red "域名申请失败，脚本退出" && exit
 fi
 certificatep='/root/ygkkkca/private.key'
 certificatec='/root/ygkkkca/cert.crt'
