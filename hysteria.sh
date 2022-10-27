@@ -77,7 +77,7 @@ mknod net/tun c 10 200
 chmod 0666 net/tun
 TUN=$(cat /dev/net/tun 2>&1)
 if [[ ! $TUN =~ 'in bad state' ]] && [[ ! $TUN =~ '处于错误状态' ]] && [[ ! $TUN =~ 'Die Dateizugriffsnummer ist in schlechter Verfassung' ]]; then 
-green "添加TUN支持失败，建议与VPS厂商沟通或后台设置开启" && exit 0
+green "添加TUN支持失败，建议与VPS厂商沟通或后台设置开启" && exit
 else
 green "恭喜，添加TUN支持成功，现添加TUN守护功能" && sleep 4
 cat>/root/tun.sh<<-\EOF
