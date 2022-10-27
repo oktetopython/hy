@@ -458,7 +458,6 @@ fi
 else
 red "输入错误，请重新选择" && changecertificate
 fi
-fi
 certificatep='/root/ygkkkca/private.key'
 certificatec='/root/ygkkkca/cert.crt'
 certclient
@@ -466,7 +465,6 @@ sed -i '21s/true/false/g' /root/HY/acl/v2rayn.json
 sed -i 's/true/false/g' /root/HY/URL.txt
 else
 hy
-fi
 fi
 else
 certificatepp='/root/ygkkkca/private.key'
