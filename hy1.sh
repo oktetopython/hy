@@ -11,7 +11,7 @@ green(){ echo -e "\033[32m\033[01m$1\033[0m";}
 yellow(){ echo -e "\033[33m\033[01m$1\033[0m";}
 white(){ echo -e "\033[37m\033[01m$1\033[0m";}
 readp(){ read -p "$(yellow "$1")" $2;}
-[[ $EUID -ne 0 ]] && yellow "请以root模式运行脚本" && exit 1
+[[ $EUID -ne 0 ]] && yellow "请以root模式运行脚本" && exit
 yellow " 请稍等3秒……正在扫描vps类型及参数中……"
 if [[ -f /etc/redhat-release ]]; then
 release="Centos"
@@ -28,7 +28,7 @@ release="Ubuntu"
 elif cat /proc/version | grep -q -E -i "centos|red hat|redhat"; then
 release="Centos"
 else 
-red "不支持你当前系统，请选择使用Ubuntu,Debian,Centos系统。" && exit 1
+red "不支持你当前系统，请选择使用Ubuntu,Debian,Centos系统。" && exit
 fi
 vsid=`grep -i version_id /etc/os-release | cut -d \" -f2 | cut -d . -f1`
 sys(){
@@ -39,10 +39,19 @@ op=`sys`
 version=`uname -r | awk -F "-" '{print $1}'`
 main=`uname  -r | awk -F . '{print $1}'`
 minor=`uname -r | awk -F . '{print $2}'`
+
 bit=`uname -m`
-[[ $bit = x86_64 ]] && cpu=AMD64
-[[ $bit = aarch64 ]] && cpu=ARM64
+if [[ $bit = x86_64 ]]; then
+cpu=amd64
+elif [[ $bit = aarch64 ]]; then
+cpu=arm64
+elif [[ $bit = s390x ]]; then
+cpu=s390x
+else
+red "VPS的CPU架构为$bit 脚本不支持当前CPU架构，请使用amd64或arm64架构的CPU运行脚本" && exit
+fi
 vi=`systemd-detect-virt`
+rm -rf /etc/localtime
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 wgcfgo(){
@@ -68,7 +77,7 @@ mknod net/tun c 10 200
 chmod 0666 net/tun
 TUN=$(cat /dev/net/tun 2>&1)
 if [[ ! $TUN =~ 'in bad state' ]] && [[ ! $TUN =~ '处于错误状态' ]] && [[ ! $TUN =~ 'Die Dateizugriffsnummer ist in schlechter Verfassung' ]]; then 
-green "添加TUN支持失败，建议与VPS厂商沟通或后台设置开启" && exit 0
+green "添加TUN支持失败，建议与VPS厂商沟通或后台设置开启" && exit
 else
 green "恭喜，添加TUN支持成功，现添加TUN守护功能" && sleep 4
 cat>/root/tun.sh<<-\EOF
@@ -138,14 +147,14 @@ wget -N https://gitlab.com/rwkgyg/hysteria-yg/raw/main/install_server.sh && bash
 if [[ -f '/usr/local/bin/hysteria' ]]; then
 blue "成功安装hysteria版本：$(/usr/local/bin/hysteria -v | awk 'NR==1 {print $3}')\n"
 else
-red "安装hysteria失败" && exit
+red "安装hysteria失败" && rm -rf install_server.sh && exit
 fi
 rm -rf install_server.sh
 }
 
 inscertificate(){
 green "hysteria协议证书申请方式选择如下:"
-readp "1. www.bing.com自签证书（回车默认）\n2. acme一键申请证书（支持常规80端口模式与dns api模式）\n请选择：" certificate
+readp "1. www.bing.com自签证书（回车默认）\n2. acme一键申请证书脚本（支持常规80端口模式与dns api模式），已用此脚本申请的证书则自动识别\n请选择：" certificate
 if [ -z "${certificate}" ] || [ $certificate == "1" ]; then
 openssl ecparam -genkey -name prime256v1 -out /etc/hysteria/private.key
 openssl req -new -x509 -days 36500 -key /etc/hysteria/private.key -out /etc/hysteria/cert.crt -subj "/CN=www.bing.com"
@@ -154,30 +163,29 @@ certificatep='/etc/hysteria/private.key'
 certificatec='/etc/hysteria/cert.crt'
 blue "已确认证书模式: www.bing.com自签证书\n"
 elif [ $certificate == "2" ]; then
-if [[ -f /root/cert.crt && -f /root/private.key ]] && [[ -s /root/cert.crt && -s /root/private.key ]]; then
-blue "经检测，之前已申请过acme证书"
-readp "1. 直接使用原来的证书，默认root路径，可支持自定义上传证书（回车默认）\n2. 删除原来的证书，重新申请acme证书\n请选择：" certacme
+if [[ -f /root/ygkkkca/cert.crt && -f /root/ygkkkca/private.key ]] && [[ -s /root/ygkkkca/cert.crt && -s /root/ygkkkca/private.key ]] && [[ -f /root/ygkkkca/ca.log ]]; then
+blue "经检测，之前已使用此acme脚本申请过证书"
+readp "1. 直接使用原来的证书，（回车默认）\n2. 删除原来的证书，重新申请证书\n请选择：" certacme
 if [ -z "${certacme}" ] || [ $certacme == "1" ]; then
-readp "请输入已申请过的acme证书域名:" ym
-echo ${ym} > /etc/hysteria/ca.log
-blue "输入的域名：$ym，已直接引用\n"
+ym=$(cat /root/ygkkkca/ca.log)
+blue "检测到的域名：$ym ，已直接引用\n"
 elif [ $certacme == "2" ]; then
-rm -rf /root/cert.crt /root/private.key
+rm -rf /root/ygkkkca
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /etc/hysteria/ca.log)
-if [[ ! -f /root/cert.crt && ! -f /root/private.key ]] && [[ ! -s /root/cert.crt && ! -s /root/private.key ]]; then
+ym=$(cat /root/ygkkkca/ca.log)
+if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
 red "证书申请失败，脚本退出" && exit
 fi
 fi
 else
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /etc/hysteria/ca.log)
-if [[ ! -f /root/cert.crt && ! -f /root/private.key ]] && [[ ! -s /root/cert.crt && ! -s /root/private.key ]]; then
-red "域名申请失败，脚本退出" && exit
+ym=$(cat /root/ygkkkca/ca.log)
+if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
+red "证书申请失败，脚本退出" && exit
 fi
 fi
-certificatep='/root/private.key'
-certificatec='/root/cert.crt'
+certificatep='/root/ygkkkca/private.key'
+certificatec='/root/ygkkkca/cert.crt'
 else 
 red "输入错误，请重新选择" && inscertificate
 fi
@@ -270,7 +278,7 @@ fi
 if [[ $ym = www.bing.com ]]; then
 ins=true
 else
-ym=$(cat /etc/hysteria/ca.log)
+ym=$(cat /root/ygkkkca/ca.log)
 ymip=$ym;ins=false
 fi
 
@@ -399,8 +407,8 @@ else
 oldserver=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server | awk '{print $2}' | awk -F '"' '{ print $2}'| cut -d ':' -f 1`
 fi
 if [[ $certificate = '/etc/hysteria/cert.crt' ]]; then
-ym=$(cat /etc/hysteria/ca.log)
-ymip=$(cat /etc/hysteria/ca.log)
+ym=$(cat /root/ygkkkca/ca.log)
+ymip=$(cat /root/ygkkkca/ca.log)
 else
 ym=www.bing.com
 ymip=$ip
@@ -417,30 +425,30 @@ blue "当前正在使用的证书：bing自签证书，可更换为acme申请的
 echo
 readp "是否切换？（回车为是。其他选择为否，并返回主菜单）\n请选择：" choose
 if [ -z "${choose}" ]; then
-if [[ -f /root/cert.crt && -f /root/private.key ]] && [[ -s /root/cert.crt && -s /root/private.key ]]; then
+if [[ -f /root/ygkkkca/cert.crt && -f /root/ygkkkca/private.key ]] && [[ -s /root/ygkkkca/cert.crt && -s /root/ygkkkca/private.key ]]; then
 blue "经检测，之前已申请过acme证书"
 readp "1. 直接使用原来的证书，默认root路径，可支持自定义上传证书（回车默认）\n2. 删除原来的证书，重新申请acme证书\n请选择：" certacme
 if [ -z "${certacme}" ] || [ $certacme == "1" ]; then
 readp "请输入已申请过的acme证书域名:" ym
-echo ${ym} > /etc/hysteria/ca.log
+echo ${ym} > /root/ygkkkca/ca.log
 blue "输入的域名：$ym，已直接引用\n"
 elif [ $certacme == "2" ]; then
-rm -rf /root/cert.crt /root/private.key
+rm -rf /root/ygkkkca
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /etc/hysteria/ca.log)
-if [[ ! -f /root/cert.crt && ! -f /root/private.key ]] && [[ ! -s /root/cert.crt && ! -s /root/private.key ]]; then
+ym=$(cat /root/ygkkkca/ca.log)
+if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
 red "域名申请失败，脚本退出" && exit
 fi
 fi
 else
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /etc/hysteria/ca.log)
-if [[ ! -f /root/cert.crt && ! -f /root/private.key ]] && [[ ! -s /root/cert.crt && ! -s /root/private.key ]]; then
+ym=$(cat /root/ygkkkca/ca.log)
+if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
 red "域名申请失败，脚本退出" && exit
 fi
 fi
-certificatep='/root/private.key'
-certificatec='/root/cert.crt'
+certificatep='/root/ygkkkca/private.key'
+certificatec='/root/ygkkkca/cert.crt'
 certclient
 sed -i '21s/true/false/g' /root/HY/acl/v2rayn.json
 sed -i 's/true/false/g' /root/HY/URL.txt
@@ -448,8 +456,8 @@ else
 hy
 fi
 else
-certificatepp='/root/private.key'
-certificatecc='/root/cert.crt'
+certificatepp='/root/ygkkkca/private.key'
+certificatecc='/root/ygkkkca/cert.crt'
 blue "当前正在使用的证书：acme申请的证书，可更换为bing自签证书"
 echo
 readp "是否切换？（回车为是。其他选择为否，并返回主菜单）\n请选择：" choose
@@ -476,10 +484,10 @@ sureipadress(){
 if [[ $certificate = '/etc/hysteria/cert.crt' && -n $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/\[$oldserver\]/${ymip}/g" /root/HY/acl/v2rayn.json
 sed -i "s/\[$oldserver\]/${ymip}/g" /root/HY/URL.txt
-elif [[ $certificate = '/root/cert.crt' && -n $(curl -s6m5 https://ip.gs -k) ]]; then
+elif [[ $certificate = '/root/ygkkkca/cert.crt' && -n $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/$oldserver/\[${ymip}\]/g" /root/HY/acl/v2rayn.json
 sed -i "s/$oldserver/\[${ymip}\]/" /root/HY/URL.txt
-elif [[ $certificate = '/root/cert.crt' && -z $(curl -s6m5 https://ip.gs -k) ]]; then
+elif [[ $certificate = '/root/ygkkkca/cert.crt' && -z $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/$oldserver/${ymip}/g" /root/HY/acl/v2rayn.json
 sed -i "s/$oldserver/${ymip}/" /root/HY/URL.txt
 elif [[ $certificate = '/etc/hysteria/cert.crt' && -z $(curl -s6m5 https://ip.gs -k) ]]; then
@@ -575,7 +583,7 @@ fi
 }
 
 inshysteria(){
-start ; inshy ; inscertificate ; inspr ; insport ; inspswd
+inshy ; inscertificate ; inspr ; insport ; inspswd
 if [[ ! $vi =~ lxc|openvz ]]; then
 sysctl -w net.core.rmem_max=8000000
 sysctl -p
@@ -600,7 +608,7 @@ if [[ $certificate = '/etc/hysteria/cert.crt' ]]; then
 ip=$(curl -s6m5 https://ip.gs -k) || ip=$(curl -s4m5 https://ip.gs -k)
 [[ -n $(echo $ip | grep ":") ]] && ymip="[$ip]" || ymip=$ip
 else
-ymip=$(cat /etc/hysteria/ca.log)
+ymip=$(cat /root/ygkkkca/ca.log)
 fi
 }
 wgcfgo
@@ -611,7 +619,7 @@ blue "v2rayn客户端配置文件v2rayn.json及代理规则文件保存到 /root
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
 blue "分享链接保存到 /root/HY/URL.txt"
 yellow "${url}\n"
-green "二维码分享链接如下"
+green "二维码分享链接如下(SagerNet / Matsuri / 小火箭)"
 qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
 else
 red "hysteria代理服务安装失败，请运行 systemctl status hysteria-server 查看服务日志" && exit
@@ -640,9 +648,9 @@ red "未正常安装hysteria!" && exit
 fi
 green "当前v2rayn客户端配置文件v2rayn.json内容如下，保存到 /root/HY/acl/v2rayn.json\n"
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
-green "当前hysteria节点分享链接如下，保存到 /root/HY/URL.txt："
+green "当前hysteria节点分享链接如下，保存到 /root/HY/URL.txt"
 yellow "$(cat /root/HY/URL.txt)\n"
-green "当前hysteria节点二维码分享链接如下"
+green "当前hysteria节点二维码分享链接如下(SagerNet / Matsuri / 小火箭)"
 qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
 }
 
