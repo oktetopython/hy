@@ -1,5 +1,5 @@
 #!/bin/bash
-hyygV="22.8.29 V 3.3"
+hyygV="22.10.27 V 4.0"
 remoteV=`wget -qO- https://gitlab.com/rwkgyg/hysteria-yg/raw/main/hysteria.sh | sed  -n 2p | cut -d '"' -f 2`
 chmod +x /root/hysteria.sh 
 red='\033[0;31m'
@@ -154,7 +154,7 @@ rm -rf install_server.sh
 
 inscertificate(){
 green "hysteria协议证书申请方式选择如下:"
-readp "1. www.bing.com自签证书（回车默认）\n2. acme一键申请证书脚本（支持常规80端口模式与dns api模式），已用此脚本申请的证书则自动识别\n请选择：" certificate
+readp "1. www.bing.com自签证书（回车默认）\n2. acme一键申请证书脚本（支持常规80端口模式与dns api模式）或已放置在/root/ygkkkca目录的自定义证书\n请选择：" certificate
 if [ -z "${certificate}" ] || [ $certificate == "1" ]; then
 openssl ecparam -genkey -name prime256v1 -out /etc/hysteria/private.key
 openssl req -new -x509 -days 36500 -key /etc/hysteria/private.key -out /etc/hysteria/cert.crt -subj "/CN=www.bing.com"
@@ -163,23 +163,29 @@ certificatep='/etc/hysteria/private.key'
 certificatec='/etc/hysteria/cert.crt'
 blue "已确认证书模式: www.bing.com自签证书\n"
 elif [ $certificate == "2" ]; then
-if [[ -f /root/ygkkkca/cert.crt && -f /root/ygkkkca/private.key ]] && [[ -s /root/ygkkkca/cert.crt && -s /root/ygkkkca/private.key ]] && [[ -f /root/ygkkkca/ca.log ]]; then
-blue "经检测，之前已使用此acme脚本申请过证书"
-readp "1. 直接使用原来的证书，（回车默认）\n2. 删除原来的证书，重新申请证书\n请选择：" certacme
+if [[ -f /root/ygkkkca/cert.crt && -f /root/ygkkkca/private.key ]] && [[ -s /root/ygkkkca/cert.crt && -s /root/ygkkkca/private.key ]]; then
+blue "经检测，root/ygkkkca目录下有证书文件（cert.crt与private.key）"
+readp "1. 直接使用root/ygkkkca目录下申请过证书（回车默认）\n2. 删除原来的证书，重新申请acme证书\n请选择：" certacme
 if [ -z "${certacme}" ] || [ $certacme == "1" ]; then
+if [[ -f /root/ygkkkca/ca.log ]]; then
 ym=$(cat /root/ygkkkca/ca.log)
 blue "检测到的域名：$ym ，已直接引用\n"
+else
+green "无本acme脚本申请证书记录，当前为自定义证书模式"
+readp "请输入已解析完成的域名:" ym
+blue "输入的域名：$ym，已直接引用\n"
+fi
 elif [ $certacme == "2" ]; then
 rm -rf /root/ygkkkca
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /root/ygkkkca/ca.log)
+ym=$(cat /root/ygkkkca/ca.log 2>/dev/null)
 if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
 red "证书申请失败，脚本退出" && exit
 fi
 fi
 else
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /root/ygkkkca/ca.log)
+ym=$(cat /root/ygkkkca/ca.log 2>/dev/null)
 if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
 red "证书申请失败，脚本退出" && exit
 fi
@@ -421,30 +427,35 @@ certificate=`cat /etc/hysteria/config.json 2>/dev/null | grep cert | awk '{print
 if [[ $certificate = '/etc/hysteria/cert.crt' ]]; then
 certificatepp='/etc/hysteria/private.key'
 certificatecc='/etc/hysteria/cert.crt'
-blue "当前正在使用的证书：bing自签证书，可更换为acme申请的证书"
+blue "当前正在使用的证书：bing自签证书，可更换为acme申请证书或已上传root/ygkkkca目录的自定义证书"
 echo
 readp "是否切换？（回车为是。其他选择为否，并返回主菜单）\n请选择：" choose
 if [ -z "${choose}" ]; then
 if [[ -f /root/ygkkkca/cert.crt && -f /root/ygkkkca/private.key ]] && [[ -s /root/ygkkkca/cert.crt && -s /root/ygkkkca/private.key ]]; then
-blue "经检测，之前已申请过acme证书"
-readp "1. 直接使用原来的证书，默认root路径，可支持自定义上传证书（回车默认）\n2. 删除原来的证书，重新申请acme证书\n请选择：" certacme
+blue "经检测，root/ygkkkca目录下有证书文件（cert.crt与private.key）"
+readp "1. 直接使用root/ygkkkca目录下申请过证书（回车默认）\n2. 删除原来的证书，重新申请acme证书\n请选择：" certacme
 if [ -z "${certacme}" ] || [ $certacme == "1" ]; then
-readp "请输入已申请过的acme证书域名:" ym
-echo ${ym} > /root/ygkkkca/ca.log
+if [[ -f /root/ygkkkca/ca.log ]]; then
+ym=$(cat /root/ygkkkca/ca.log)
+blue "检测到的域名：$ym ，已直接引用\n"
+else
+green "无本acme脚本申请证书记录，当前为自定义证书模式"
+readp "请输入已解析完成的域名:" ym
 blue "输入的域名：$ym，已直接引用\n"
+fi
 elif [ $certacme == "2" ]; then
 rm -rf /root/ygkkkca
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /root/ygkkkca/ca.log)
+ym=$(cat /root/ygkkkca/ca.log 2>/dev/null)
 if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
-red "域名申请失败，脚本退出" && exit
+red "证书申请失败，脚本退出" && exit
 fi
 fi
 else
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /root/ygkkkca/ca.log)
+ym=$(cat /root/ygkkkca/ca.log 2>/dev/null)
 if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
-red "域名申请失败，脚本退出" && exit
+red "证书申请失败，脚本退出" && exit
 fi
 fi
 certificatep='/root/ygkkkca/private.key'
@@ -564,7 +575,7 @@ hysteriashare
 
 changeserv(){
 green "hysteria配置变更选择如下:"
-readp "1. 切换IPV4/IPV6出站优先级\n2. 切换传输协议类型\n3. 切换证书类型(支持root路径上传自定义证书)\n4. 更换验证密码\n5. 更换端口\n6. 返回上层\n请选择：" choose
+readp "1. 切换IPV4/IPV6出站优先级\n2. 切换传输协议类型\n3. 切换证书类型(支持/root/ygkkkca路径上传自定义证书)\n4. 更换验证密码\n5. 更换端口\n6. 返回上层\n请选择：" choose
 if [ $choose == "1" ];then
 changeip
 elif [ $choose == "2" ];then
