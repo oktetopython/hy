@@ -425,22 +425,28 @@ fi
 }
 wgcfgo
 }
+
 servername=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server_name | awk '{print $2}' | awk -F '"' '{ print $2}'`
 certificate=`cat /etc/hysteria/config.json 2>/dev/null | grep cert | awk '{print $2}' | awk -F '"' '{ print $2}'`
 if [[ $certificate = '/etc/hysteria/cert.crt' ]]; then
 certificatepp='/etc/hysteria/private.key'
 certificatecc='/etc/hysteria/cert.crt'
-blue "当前正在使用的证书：bing自签证书，可更换为acme申请的证书"
+blue "当前正在使用的证书：bing自签证书，可更换为acme申请证书或已上传root/ygkkkca目录的自定义证书"
 echo
 readp "是否切换？（回车为是。其他选择为否，并返回主菜单）\n请选择：" choose
 if [ -z "${choose}" ]; then
 if [[ -f /root/ygkkkca/cert.crt && -f /root/ygkkkca/private.key ]] && [[ -s /root/ygkkkca/cert.crt && -s /root/ygkkkca/private.key ]]; then
-blue "经检测，之前已申请过acme证书"
-readp "1. 直接使用原来的证书，默认root路径，可支持自定义上传证书（回车默认）\n2. 删除原来的证书，重新申请acme证书\n请选择：" certacme
+blue "经检测，root/ygkkkca目录下有证书文件（cert.crt与private.key）"
+readp "1. 直接使用root/ygkkkca目录下申请过证书（回车默认）\n2. 删除原来的证书，重新申请acme证书\n请选择：" certacme
 if [ -z "${certacme}" ] || [ $certacme == "1" ]; then
-readp "请输入已申请过的acme证书域名:" ym
-echo ${ym} > /root/ygkkkca/ca.log
+if [[ -f /root/ygkkkca/ca.log ]]; then
+ym=$(cat /root/ygkkkca/ca.log)
+blue "检测到的域名：$ym ，已直接引用\n"
+else
+green "无本acme脚本申请证书记录，当前为自定义证书模式"
+readp "请输入已解析完成的域名:" ym
 blue "输入的域名：$ym，已直接引用\n"
+fi
 elif [ $certacme == "2" ]; then
 rm -rf /root/ygkkkca
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
@@ -450,10 +456,7 @@ red "域名申请失败，脚本退出" && exit
 fi
 fi
 else
-wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /root/ygkkkca/ca.log)
-if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
-red "域名申请失败，脚本退出" && exit
+red "输入错误，请重新选择" && changecertificate
 fi
 fi
 certificatep='/root/ygkkkca/private.key'
