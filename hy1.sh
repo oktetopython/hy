@@ -183,9 +183,8 @@ fi
 certificatep='/root/ygkkkca/private.key'
 certificatec='/root/ygkkkca/cert.crt'
 elif [ $certificate == "3" ]; then
-
-oldcer=`cat /etc/caddy/caddy_server.json 2>/dev/null | grep -w certificate | awk '{print $2}' | awk -F '"' '{ print $2}'| awk -F ',' '{ print $NF}'`
-oldkey=`cat /etc/caddy/caddy_server.json 2>/dev/null | grep -w key | awk '{print $2}' | awk -F '"' '{ print $2}'| awk -F ',' '{ print $NF}'`
+oldcer=`cat /etc/hysteria/config.json 2>/dev/null | sed -n 12p | awk '{print $2}' | tr -d ',"'`
+oldkey=`cat /etc/hysteria/config.json 2>/dev/null | sed -n 13p | awk '{print $2}' | tr -d ',"'`
 sed -i "s/$oldcer/${certificatec}/g" /etc/hysteria/config.json
 sed -i "s/$oldkey/${certificatep}/g" /etc/hysteria/config.json
 readp "请输入已解析好的域名:" ym
