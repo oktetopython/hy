@@ -378,6 +378,10 @@ cfwarp(){
 wget -N --no-check-certificate https://gitlab.com/rwkgyg/cfwarp/raw/main/CFwarp.sh && bash CFwarp.sh
 }
 
+acme(){
+bash <(curl -L -s https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh)
+}
+
 changepr(){
 if [[ -z $(systemctl status hysteria-server 2>/dev/null | grep -w active) || ! -f '/etc/hysteria/config.json' ]]; then
 red "未正常安装hysteria!" && exit
@@ -690,7 +694,8 @@ green " 5. 更新hysteria-yg安装脚本"
 green " 6. 更新hysteria内核"
 white "----------------------------------------------------------------------------------"
 green " 7. 显示当前hysteria分享链接、V2rayN配置文件、二维码"
-green " 8. 安装warp（可选）"
+green " 8. acme证书管理菜单"
+green " 9. 安装warp（可选）"
 green " 0. 退出脚本"
 red "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 if [[ -n $(systemctl status hysteria-server 2>/dev/null | grep -w active) && -f '/etc/hysteria/config.json' ]]; then
@@ -722,7 +727,8 @@ case "$Input" in
  5 ) uphyyg;; 
  6 ) uphysteriacore;;
  7 ) hysteriashare;;
- 8 ) cfwarp;;
+ 8 ) acme;;
+ 9 ) cfwarp;;
  * ) exit 
 esac
 }
