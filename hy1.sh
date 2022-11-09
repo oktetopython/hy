@@ -303,6 +303,19 @@ blue "已确认验证密码：${pswd}\n"
 #green "确定最大下载速度$hysteria_down_mbps"
 }
 
+portss(){
+manyports=`cat /root/HY/mports 2>/dev/null`
+if [[ -z $firstudpport && -z $manyports ]]; then
+clport=$port
+elif [[ -n $firstudpport && -n $manyports ]]; then
+clport="$port,$manyports,$firstudpport-$endudpport"
+elif [[ -z $firstudpport ]]; then
+clport="$port,$manyports"
+elif [[ -z $manyports ]]; then
+clport="$port,$firstudpport-$endudpport"
+fi
+}
+
 insconfig(){
 green "设置配置文件中……，稍等5秒"
 v4=$(curl -s4m5 https://ip.gs -k)
@@ -346,17 +359,7 @@ ym=$(cat /root/ygkkkca/ca.log)
 ymip=$ym;ins=false
 fi
 
-manyports=`cat /root/HY/mports 2>/dev/null`
-if [[ -z $firstudpport && -z $manyports ]]; then
-clport=$port
-elif [[ -n $firstudpport && -n $manyports ]]; then
-clport="$port,$manyports,$firstudpport-$endudpport"
-elif [[ -z $firstudpport ]]; then
-clport="$port,$manyports"
-elif [[ -z $manyports ]]; then
-clport="$port,$firstudpport-$endudpport"
-fi
-
+portss
 cat <<EOF > /root/HY/acl/v2rayn.json
 {
 "server": "${ymip}:${clport}",
@@ -646,8 +649,9 @@ echo
 blue "当前正在使用的转发端口：$oldport"
 echo
 insport
+portss
 sed -i "2s/$servport/$port/g" /etc/hysteria/config.json
-sed -i "2s/$oldport/$port/g" /root/HY/acl/v2rayn.json
+sed -i "2s/$oldport/$clport/g" /root/HY/acl/v2rayn.json
 sed -i "s/$servport/$port/g" /root/HY/URL.txt
 systemctl restart hysteria-server
 blue "hysteria代理服务的转发主端口已由 $servport 更换为 $port ，配置已更新 "
