@@ -215,7 +215,27 @@ blue "已确认传输协议: ${hysteria_protocol}\n"
 }
 
 insport(){
-iptables -t nat -F PREROUTING
+dports(){
+readp "设置udp多端口(建议10000-65535之间，每次增加一个)：" manyports
+iptables -t nat -A PREROUTING -p udp --dport $manyports  -j DNAT --to-destination :$port
+ip6tables -t nat -A PREROUTING -p udp --dport $manyports  -j DNAT --to-destination :$port
+blue "已确认转发的多端口：$manyports\n"
+}
+fports(){
+readp "设置udp范围端口的起始端口(建议10000-65535之间)：" firstudpport
+readp "设置udp范围端口的末尾端口(建议10000-65535之间，要比上面起始端口大)：" endudpport
+if [[ $firstudpport -ge $endudpport ]]; then
+until [[ $firstudpport -le $endudpport ]]
+do
+[[ $firstudpport -ge $endudpport ]] && yellow "\n起始端口小于末尾端口，人才！请重新输入起始/末尾端口" && readp "设置udp范围端口的起始端口(建议10000-65535之间)：" firstudpport && readp "\n设置udp范围端口的末尾端口(建议10000-65535之间，要比上面起始端口大)：" endudpport
+done
+fi
+iptables -t nat -A PREROUTING -p udp --dport $firstudpport:$endudpport  -j DNAT --to-destination :$port
+ip6tables -t nat -A PREROUTING -p udp --dport $firstudpport:$endudpport  -j DNAT --to-destination :$port
+blue "已确认转发的范围端口：$firstudpport:$endudpport\n"
+}
+
+iptables -t nat -F PREROUTING >/dev/null 2>&1
 readp "设置hysteria转发主端口[1-65535]（回车跳过为2000-65535之间的随机端口）：" port
 if [[ -z $port ]]; then
 port=$(shuf -i 2000-65535 -n 1)
@@ -231,21 +251,24 @@ done
 fi
 blue "已确认转发主端口：$port\n"
 if [[ ${hysteria_protocol} == "udp" || $(cat /etc/hysteria/config.json 2>/dev/null | grep protocol | awk '{print $2}' | awk -F '"' '{ print $2}') == "udp" ]]; then
-green "经检测，当前选择的是udp协议，支持自动变化udp端口功能"
-readp "1. 不使用多端口功能（回车默认）\n2. 使用udp多端口跳跃功能\n请选择：" protocol
-if [ -z "${protocol}" ] || [ $protocol == "1" ];then
+green "经检测，当前选择的是udp协议，支持端口无缝自动切换功能"
+readp "1. 继续使用默认单端口（回车默认）\n2. 使用多端口、范围端口的无缝自动切换功能\n请选择：" choose
+if [ -z "${choose}" ] || [ $choose == "1" ]; then
 echo
-elif [ $protocol == "2" ];then
-readp "设置udp多端口的起始端口(建议10000-65535之间)：" firstudpport
-readp "设置udp多端口的末尾端口(建议10000-65535之间，比上面起始端口大)：" endudpport
-if [[ $firstudpport -ge $endudpport ]]; then
-until [[ $firstudpport -le $endudpport ]]
-do
-[[ $firstudpport -ge $endudpport ]] && yellow "\n起始端口小于末尾端口，人才！请重新输入起始/末尾端口" && readp "设置udp多端口的起始端口(建议10000-65535之间)：" firstudpport && readp "\n设置udp多端口的末尾端口(建议10000-65535之间，比上面起始端口大)：" endudpport
-done
+elif [ $choose == "2" ]; then
+readp "1. 使用多端口\n2. 使用范围端口\n3. 使用多端口+范围端口\n请选择：" choose
+if [ $choose == "1" ]; then
+dports
+elif [ $choose == "2" ]; then
+fports
+elif [ $choose == "3" ]; then
+dports
+fports
+else
+red "输入错误，请重新选择" && insport
 fi
-iptables -t nat -A PREROUTING -p udp --dport $firstudpport:$endudpport  -j DNAT --to-destination :$port
-ip6tables -t nat -A PREROUTING -p udp --dport $firstudpport:$endudpport  -j DNAT --to-destination :$port
+iptables -t nat -A PREROUTING -p udp --dport $port  -j DNAT --to-destination :$port
+ip6tables -t nat -A PREROUTING -p udp --dport $port  -j DNAT --to-destination :$port
 else
 red "输入错误，请重新选择" && insport
 fi
@@ -345,7 +368,7 @@ systemctl disable hysteria-server.service >/dev/null 2>&1
 rm -f /lib/systemd/system/hysteria-server.service /lib/systemd/system/hysteria-server@.service
 rm -rf /usr/local/bin/hysteria /etc/hysteria /root/HY /root/install_server.sh /root/hysteria.sh /usr/bin/hy
 sed -i '/systemctl restart hysteria-server/d' /etc/crontab
-iptables -t nat -F PREROUTING
+iptables -t nat -F PREROUTING >/dev/null 2>&1
 netfilter-persistent save >/dev/null 2>&1
 green "hysteria卸载完成！"
 }
@@ -472,8 +495,13 @@ green "无本acme脚本申请证书记录，当前为自定义证书模式"
 readp "请输入已解析完成的域名:" ym
 blue "输入的域名：$ym，已直接引用\n"
 fi
-elif [ $certacme == "2" ]; then
+elif [ $certacme == "2" ]; then 
+curl https://get.acme.sh | sh
+bash /root/.acme.sh/acme.sh --uninstall
 rm -rf /root/ygkkkca
+rm -rf ~/.acme.sh acme.sh
+sed -i '/--cron/d' /etc/crontab
+[[ -z $(/root/.acme.sh/acme.sh -v 2>/dev/null) ]] && green "acme.sh卸载完毕" || red "acme.sh卸载失败"
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
 ym=$(cat /root/ygkkkca/ca.log 2>/dev/null)
 if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
@@ -591,14 +619,14 @@ red "未正常安装hysteria!" && exit
 fi
 oldport=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server | awk '{print $2}' | awk -F '"' '{ print $2}'| awk -F ':' '{ print $NF}'`
 echo
-blue "当前正在使用的端口：$oldport"
+blue "当前正在使用的转发主端口：$oldport"
 echo
 insport
 sed -i "2s/$oldport/$port/g" /etc/hysteria/config.json
 sed -i "2s/$oldport/$port/g" /root/HY/acl/v2rayn.json
 sed -i "s/$oldport/$port/g" /root/HY/URL.txt
 systemctl restart hysteria-server
-blue "hysteria代理服务的端口已由 $oldport 更换为 $port ，配置已更新 "
+blue "hysteria代理服务的转发主端口已由 $oldport 更换为 $port ，配置已更新 "
 hysteriashare
 }
 
