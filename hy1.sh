@@ -220,13 +220,14 @@ readp "设置udp多端口(建议10000-65535之间，每次增加一个)：" many
 iptables -t nat -A PREROUTING -p udp --dport $manyports  -j DNAT --to-destination :$port
 ip6tables -t nat -A PREROUTING -p udp --dport $manyports  -j DNAT --to-destination :$port
 blue "已确认转发的多端口：$manyports\n"
+echo -n $manyports, >> /root/HY/mports
 }
 
 arports(){
 readp "是否继续添加多端口？继续按回车，退出按任意键：" choose
 if [[ -z $choose ]]; then
 dports
-until [[ -n $choose ]]
+until [[ -n $choose ]] && sed -i 's/.$//' /root/HY/mports
 do
 [[ -z $choose ]] && dports && readp "是否继续添加多端口？继续按回车，退出按任意键：" choose
 done
@@ -244,7 +245,7 @@ done
 fi
 iptables -t nat -A PREROUTING -p udp --dport $firstudpport:$endudpport  -j DNAT --to-destination :$port
 ip6tables -t nat -A PREROUTING -p udp --dport $firstudpport:$endudpport  -j DNAT --to-destination :$port
-blue "已确认转发的范围端口：$firstudpport:$endudpport\n"
+blue "已确认转发的范围端口：$firstudpport 到 $endudpport\n"
 }
 
 iptables -t nat -F PREROUTING >/dev/null 2>&1
@@ -304,7 +305,6 @@ blue "已确认验证密码：${pswd}\n"
 
 insconfig(){
 green "设置配置文件中……，稍等5秒"
-mkdir -p /root/HY/acl
 v4=$(curl -s4m5 https://ip.gs -k)
 [[ -z $v4 ]] && rpip=64 || rpip=46
 cat <<EOF > /etc/hysteria/config.json
@@ -346,6 +346,7 @@ ym=$(cat /root/ygkkkca/ca.log)
 ymip=$ym;ins=false
 fi
 
+manyports=`cat /root/HY/mports 2>/dev/null`
 if [[ -z $firstudpport && -z $manyports ]]; then
 clport=$port
 elif [[ -n $firstudpport && -n $manyports ]]; then
@@ -674,7 +675,9 @@ fi
 }
 
 inshysteria(){
-inshy ; inscertificate ; inspr ; insport ; inspswd
+inshy ; inscertificate
+mkdir -p /root/HY/acl
+inspr ; insport ; inspswd
 if [[ ! $vi =~ lxc|openvz ]]; then
 sysctl -w net.core.rmem_max=8000000
 sysctl -p
