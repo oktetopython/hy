@@ -97,6 +97,7 @@ fi
 [[ $(type -P curl) ]] || (yellow "检测到curl未安装，升级安装中" && $yumapt update;$yumapt install curl)
 [[ $(type -P lsof) ]] || (yellow "检测到lsof未安装，升级安装中" && $yumapt update;$yumapt install lsof)
 [[ ! $(type -P qrencode) ]] && ($yumapt update;$yumapt install qrencode)
+[[ ! $(type -P iptables) ]] && ($yumapt update;$yumapt install iptables-persistent)
 [[ ! $(type -P python3) ]] && (yellow "检测到python3未安装，升级安装中" && $yumapt update;$yumapt install python3)
 if [[ -z $(grep 'DiG 9' /etc/hosts) ]]; then
 v4=$(curl -s4m5 https://ip.gs -k)
@@ -199,7 +200,7 @@ fi
 
 inspr(){
 green "hysteria的传输协议选择如下:"
-readp "1. udp（回车默认，推荐）\n2. wechat-video（推荐）\n3. faketcp（仅支持linux客户端且需要root权限）\n请选择：" protocol
+readp "1. udp（支持udp多端口跳跃功能，回车默认）\n2. wechat-video\n3. faketcp（仅支持linux客户端且需要root权限）\n请选择：" protocol
 if [ -z "${protocol}" ] || [ $protocol == "1" ];then
 hysteria_protocol="udp"
 elif [ $protocol == "2" ];then
@@ -214,7 +215,8 @@ blue "已确认传输协议: ${hysteria_protocol}\n"
 }
 
 insport(){
-readp "hysteria端口设置[1-65535]（回车跳过为2000-65535之间的随机端口）：" port
+iptables -t nat -F PREROUTING
+readp "设置hysteria转发主端口[1-65535]（回车跳过为2000-65535之间的随机端口）：" port
 if [[ -z $port ]]; then
 port=$(shuf -i 2000-65535 -n 1)
 until [[ -z $(ss -ntlp | awk '{print $4}' | grep -w "$port") ]]
@@ -227,7 +229,28 @@ do
 [[ -n $(ss -ntlp | awk '{print $4}' | grep -w "$port") ]] && yellow "\n端口被占用，请重新输入端口" && readp "自定义hysteria端口:" port
 done
 fi
-blue "已确认端口：$port\n"
+blue "已确认转发主端口：$port\n"
+if [[ ${hysteria_protocol} == "udp" || $(cat /etc/hysteria/config.json 2>/dev/null | grep protocol | awk '{print $2}' | awk -F '"' '{ print $2}') == "udp" ]]; then
+green "经检测，当前选择的是udp协议，支持自动变化udp端口功能"
+readp "1. 不使用多端口功能（回车默认）\n2. 使用udp多端口跳跃功能\n请选择：" protocol
+if [ -z "${protocol}" ] || [ $protocol == "1" ];then
+echo
+elif [ $protocol == "2" ];then
+readp "设置udp多端口的起始端口(建议10000-65535之间)：" firstudpport
+readp "设置udp多端口的末尾端口(建议10000-65535之间，比上面起始端口大)：" endudpport
+if [[ $firstudpport -ge $endudpport ]]; then
+until [[ $firstudpport -le $endudpport ]]
+do
+[[ $firstudpport -ge $endudpport ]] && yellow "\n起始端口小于末尾端口，人才！请重新输入起始/末尾端口" && readp "设置udp多端口的起始端口(建议10000-65535之间)：" firstudpport && readp "\n设置udp多端口的末尾端口(建议10000-65535之间，比上面起始端口大)：" endudpport
+done
+fi
+iptables -t nat -A PREROUTING -p udp --dport $firstudpport:$endudpport  -j DNAT --to-destination :$port
+ip6tables -t nat -A PREROUTING -p udp --dport $firstudpport:$endudpport  -j DNAT --to-destination :$port
+else
+red "输入错误，请重新选择" && insport
+fi
+fi
+netfilter-persistent save >/dev/null 2>&1
 }
 
 inspswd(){
@@ -322,6 +345,7 @@ systemctl disable hysteria-server.service >/dev/null 2>&1
 rm -f /lib/systemd/system/hysteria-server.service /lib/systemd/system/hysteria-server@.service
 rm -rf /usr/local/bin/hysteria /etc/hysteria /root/HY /root/install_server.sh /root/hysteria.sh /usr/bin/hy
 sed -i '/systemctl restart hysteria-server/d' /etc/crontab
+iptables -t nat -F PREROUTING
 green "hysteria卸载完成！"
 }
 
