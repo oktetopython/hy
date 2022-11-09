@@ -353,7 +353,7 @@ elif [[ -n $firstudpport && -n $manyports ]]; then
 clport="$port,$manyports,$firstudpport-$endudpport"
 elif [[ -z $firstudpport ]]; then
 clport="$port,$manyports"
-elif [[ -z $manyports ]]
+elif [[ -z $manyports ]]; then
 clport="$port,$firstudpport-$endudpport"
 fi
 
