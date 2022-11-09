@@ -346,6 +346,7 @@ rm -f /lib/systemd/system/hysteria-server.service /lib/systemd/system/hysteria-s
 rm -rf /usr/local/bin/hysteria /etc/hysteria /root/HY /root/install_server.sh /root/hysteria.sh /usr/bin/hy
 sed -i '/systemctl restart hysteria-server/d' /etc/crontab
 iptables -t nat -F PREROUTING
+netfilter-persistent save >/dev/null 2>&1
 green "hysteria卸载完成！"
 }
 
