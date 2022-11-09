@@ -346,9 +346,19 @@ ym=$(cat /root/ygkkkca/ca.log)
 ymip=$ym;ins=false
 fi
 
+if [[ -z $firstudpport && -z $manyports ]]; then
+clport=$port
+elif [[ -n $firstudpport && -n $manyports ]]; then
+clport="$port,$manyports,$firstudpport-$endudpport"
+elif [[ -z $firstudpport ]]; then
+clport="$port,$manyports"
+elif [[ -z $manyports ]]
+clport="$port,$firstudpport-$endudpport"
+fi
+
 cat <<EOF > /root/HY/acl/v2rayn.json
 {
-"server": "${ymip}:${port}",
+"server": "${ymip}:${clport}",
 "protocol": "${hysteria_protocol}",
 "up_mbps": 40,
 "down_mbps": 200,
@@ -630,15 +640,16 @@ if [[ -z $(systemctl status hysteria-server 2>/dev/null | grep -w active) || ! -
 red "未正常安装hysteria!" && exit
 fi
 oldport=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server | awk '{print $2}' | awk -F '"' '{ print $2}'| awk -F ':' '{ print $NF}'`
+servport=`cat /etc/hysteria/config.json 2>/dev/null  | awk '{print $2}' | sed -n 2p | tr -d ',:"'`
 echo
-blue "当前正在使用的转发主端口：$oldport"
+blue "当前正在使用的转发端口：$oldport"
 echo
 insport
-sed -i "2s/$oldport/$port/g" /etc/hysteria/config.json
+sed -i "2s/$servport/$port/g" /etc/hysteria/config.json
 sed -i "2s/$oldport/$port/g" /root/HY/acl/v2rayn.json
-sed -i "s/$oldport/$port/g" /root/HY/URL.txt
+sed -i "s/$servport/$port/g" /root/HY/URL.txt
 systemctl restart hysteria-server
-blue "hysteria代理服务的转发主端口已由 $oldport 更换为 $port ，配置已更新 "
+blue "hysteria代理服务的转发主端口已由 $servport 更换为 $port ，配置已更新 "
 hysteriashare
 }
 
