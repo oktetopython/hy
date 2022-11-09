@@ -1,5 +1,5 @@
 #!/bin/bash
-hyygV="22.8.29 V 3.3"
+hyygV="22.10.27 V 4.0"
 remoteV=`wget -qO- https://gitlab.com/rwkgyg/hysteria-yg/raw/main/hysteria.sh | sed  -n 2p | cut -d '"' -f 2`
 chmod +x /root/hysteria.sh 
 red='\033[0;31m'
@@ -378,6 +378,10 @@ cfwarp(){
 wget -N --no-check-certificate https://gitlab.com/rwkgyg/cfwarp/raw/main/CFwarp.sh && bash CFwarp.sh
 }
 
+acme(){
+bash <(curl -L -s https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh)
+}
+
 changepr(){
 if [[ -z $(systemctl status hysteria-server 2>/dev/null | grep -w active) || ! -f '/etc/hysteria/config.json' ]]; then
 red "未正常安装hysteria!" && exit
@@ -575,7 +579,7 @@ hysteriashare
 
 changeserv(){
 green "hysteria配置变更选择如下:"
-readp "1. 切换IPV4/IPV6出站优先级\n2. 切换传输协议类型\n3. 切换证书类型(支持root路径上传自定义证书)\n4. 更换验证密码\n5. 更换端口\n6. 返回上层\n请选择：" choose
+readp "1. 切换IPV4/IPV6出站优先级\n2. 切换传输协议类型\n3. 切换证书类型(支持/root/ygkkkca路径上传自定义证书)\n4. 更换验证密码\n5. 更换端口\n6. 返回上层\n请选择：" choose
 if [ $choose == "1" ];then
 changeip
 elif [ $choose == "2" ];then
@@ -684,13 +688,14 @@ red "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 green " 1. 安装hysteria（必选）" 
 green " 2. 卸载hysteria"
 white "----------------------------------------------------------------------------------"
-green " 3. 五种配置快速变更（IP优先级、传输协议、证书类型、验证密码、端口）" 
+green " 3. 变更配置（IP优先级、传输协议、证书类型、验证密码、端口）" 
 green " 4. 关闭、开启、重启hysteria"   
 green " 5. 更新hysteria-yg安装脚本"  
 green " 6. 更新hysteria内核"
 white "----------------------------------------------------------------------------------"
 green " 7. 显示当前hysteria分享链接、V2rayN配置文件、二维码"
-green " 8. 安装warp（可选）"
+green " 8. ACME证书管理菜单"
+green " 9. 安装WARP（可选）"
 green " 0. 退出脚本"
 red "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 if [[ -n $(systemctl status hysteria-server 2>/dev/null | grep -w active) && -f '/etc/hysteria/config.json' ]]; then
@@ -722,7 +727,8 @@ case "$Input" in
  5 ) uphyyg;; 
  6 ) uphysteriacore;;
  7 ) hysteriashare;;
- 8 ) cfwarp;;
+ 8 ) acme;;
+ 9 ) cfwarp;;
  * ) exit 
 esac
 }
