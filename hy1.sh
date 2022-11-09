@@ -224,14 +224,12 @@ echo -n $manyports, >> /root/HY/mports
 }
 
 arports(){
-readp "是否继续添加多端口？继续按回车，退出按任意键：" choose
-if [[ -z $choose ]]; then
+rm -rf /root/HY/mports
 dports
 until [[ -n $choose ]] && sed -i 's/.$//' /root/HY/mports
 do
 [[ -z $choose ]] && dports && readp "是否继续添加多端口？继续按回车，退出按任意键：" choose
 done
-fi
 }
 
 fports(){
