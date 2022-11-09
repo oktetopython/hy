@@ -221,6 +221,18 @@ iptables -t nat -A PREROUTING -p udp --dport $manyports  -j DNAT --to-destinatio
 ip6tables -t nat -A PREROUTING -p udp --dport $manyports  -j DNAT --to-destination :$port
 blue "已确认转发的多端口：$manyports\n"
 }
+
+arports(){
+readp "是否继续添加多端口？继续按回车，退出按任意键：" choose
+if [[ -z $choose ]]; then
+dports
+until [[ -n $choose ]]
+do
+[[ -z $choose ]] && dports && readp "是否继续添加多端口？继续按回车，退出按任意键：" choose
+done
+fi
+}
+
 fports(){
 readp "设置udp范围端口的起始端口(建议10000-65535之间)：" firstudpport
 readp "设置udp范围端口的末尾端口(建议10000-65535之间，要比上面起始端口大)：" endudpport
@@ -258,11 +270,11 @@ echo
 elif [ $choose == "2" ]; then
 readp "1. 使用多端口\n2. 使用范围端口\n3. 使用多端口+范围端口\n请选择：" choose
 if [ $choose == "1" ]; then
-dports
+arports
 elif [ $choose == "2" ]; then
 fports
 elif [ $choose == "3" ]; then
-dports
+arports
 fports
 else
 red "输入错误，请重新选择" && insport
