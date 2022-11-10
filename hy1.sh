@@ -254,12 +254,12 @@ if [[ -z $port ]]; then
 port=$(shuf -i 2000-65535 -n 1)
 until [[ -z $(ss -ntlp | awk '{print $4}' | grep -w "$port") ]]
 do
-[[ -n $(ss -ntlp | awk '{print $4}' | grep -w "$port") ]] && yellow "\n端口被占用，请重新输入端口" && readp "自定义hysteria端口:" port
+[[ -n $(ss -ntlp | awk '{print $4}' | grep -w "$port") ]] && yellow "\n端口被占用，请重新输入端口" && readp "自定义hysteria转发主端口:" port
 done
 else
 until [[ -z $(ss -ntlp | awk '{print $4}' | grep -w "$port") ]]
 do
-[[ -n $(ss -ntlp | awk '{print $4}' | grep -w "$port") ]] && yellow "\n端口被占用，请重新输入端口" && readp "自定义hysteria端口:" port
+[[ -n $(ss -ntlp | awk '{print $4}' | grep -w "$port") ]] && yellow "\n端口被占用，请重新输入端口" && readp "自定义hysteria转发主端口:" port
 done
 fi
 blue "已确认转发主端口：$port\n"
@@ -295,12 +295,6 @@ if [[ -z ${pswd} ]]; then
 pswd=`date +%s%N |md5sum | cut -c 1-6`
 fi
 blue "已确认验证密码：${pswd}\n"
-#readp "设置最大上传速度/Mbps(默认:100): " hysteria_up_mbps
-#[[ -z "${hysteria_up_mbps}" ]] && hysteria_up_mbps=100
-#green "确定最大上传速度$hysteria_up_mbps"
-#readp "设置最大下载速度/Mbps(默认:100): " hysteria_down_mbps
-#[[ -z "${hysteria_down_mbps}" ]] && hysteria_down_mbps=100
-#green "确定最大下载速度$hysteria_down_mbps"
 }
 
 portss(){
