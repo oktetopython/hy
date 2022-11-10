@@ -3,6 +3,7 @@ hyygV="22.10.27 V 4.0"
 remoteV=`wget -qO- https://gitlab.com/rwkgyg/hysteria-yg/raw/main/hysteria.sh | sed  -n 2p | cut -d '"' -f 2`
 chmod +x /root/hysteria.sh 
 red='\033[0;31m'
+yellow='\033[0;33m'
 bblue='\033[0;34m'
 plain='\033[0m'
 blue(){ echo -e "\033[36m\033[01m$1\033[0m";}
@@ -712,12 +713,13 @@ fi
 wgcfgo
 url="hysteria://${ymip}:${port}?protocol=${hysteria_protocol}&auth=${pswd}&peer=${ym}&insecure=${ins}&upmbps=40&downmbps=200&alpn=h3#hysteria-ygkkk"
 echo ${url} > /root/HY/URL.txt
-green "hysteria代理服务安装完成，生成脚本的快捷方式为 hy"
+red "======================================================================================"
+green "hysteria代理服务安装完成，生成脚本的快捷方式为 hy" && sleep 3
 blue "v2rayn客户端配置文件v2rayn.json及代理规则文件保存到 /root/HY/acl\n"
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
-blue "分享链接保存到 /root/HY/URL.txt"
+blue "分享链接保存到 /root/HY/URL.txt" && sleep 3
 yellow "${url}\n"
-green "二维码分享链接如下(SagerNet / Matsuri / 小火箭)"
+green "二维码分享链接如下(SagerNet / Matsuri / 小火箭)" && sleep 3
 qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
 else
 red "hysteria代理服务安装失败，请运行 systemctl status hysteria-server 查看服务日志" && exit
@@ -745,11 +747,15 @@ hysteriashare(){
 if [[ -z $(systemctl status hysteria-server 2>/dev/null | grep -w active) || ! -f '/etc/hysteria/config.json' ]]; then
 red "未正常安装hysteria!" && exit
 fi
-green "当前v2rayn客户端配置文件v2rayn.json内容如下，保存到 /root/HY/acl/v2rayn.json\n"
+red "======================================================================================"
+oldport=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server | awk '{print $2}' | awk -F '"' '{ print $2}'| awk -F ':' '{ print $NF}'`
+green "\n当前hysteria代理正在使用的端口：" && sleep 2
+blue "$oldport\n"
+green "当前v2rayn客户端配置文件v2rayn.json内容如下，保存到 /root/HY/acl/v2rayn.json\n" && sleep 2
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
-green "当前hysteria节点分享链接如下，保存到 /root/HY/URL.txt"
+green "当前hysteria节点分享链接如下，保存到 /root/HY/URL.txt" && sleep 2
 yellow "$(cat /root/HY/URL.txt)\n"
-green "当前hysteria节点二维码分享链接如下(SagerNet / Matsuri / 小火箭)"
+green "当前hysteria节点二维码分享链接如下(SagerNet / Matsuri / 小火箭)" && sleep 2
 qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
 }
 
@@ -784,20 +790,21 @@ green " 0. 退出脚本"
 red "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 if [[ -n $(systemctl status hysteria-server 2>/dev/null | grep -w active) && -f '/etc/hysteria/config.json' ]]; then
 if [ "${hyygV}" = "${remoteV}" ]; then
-green "当前hysteria-yg安装脚本版本号：${hyygV} ，已是最新版本\n"
+echo -e "当前 hysteria-yg 安装脚本版本号：${bblue}${hyygV}${plain} ，已是最新版本\n"
 else
-green "当前hysteria-yg安装脚本版本号：${hyygV}"
-yellow "检测到最新hysteria-yg安装脚本版本号：${remoteV} ，可选择5进行更新\n"
+echo -e "当前 hysteria-yg 安装脚本版本号：${bblue}${hyygV}${plain}"
+echo -e "检测到最新 hysteria-yg 安装脚本版本号：${yellow}${remoteV}${plain} ，可选择5进行更新\n"
 fi
 loVERSION="$(/usr/local/bin/hysteria -v | awk 'NR==1 {print $3}')"
 hyVERSION="v$(curl -Ls "https://data.jsdelivr.com/v1/package/resolve/gh/HyNetwork/Hysteria" | grep '"version":' | sed -E 's/.*"([^"]+)".*/\1/')"
 if [ "${loVERSION}" = "${hyVERSION}" ]; then
-green "当前hysteria内核版本号：${loVERSION} ，已是最新版本\n"
+echo -e "当前 hysteria 已安装内核版本号：${bblue}${loVERSION}${plain} ，已是最新版本"
 else
-green "当前hysteria内核版本号：${loVERSION}"
-yellow "检测到最新hysteria内核版本号：${hyVERSION} ，可选择6进行更新\n"
+echo -e "当前 hysteria 已安装内核版本号：${bblue}${loVERSION}${plain}"
+echo -e "检测到最新 hysteria 内核版本号：${yellow}${hyVERSION}${plain} ，可选择6进行更新"
 fi
 fi
+red "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 white "VPS系统信息如下："
 white "操作系统:     $(blue "$op")" && white "内核版本:     $(blue "$version")" && white "CPU架构 :     $(blue "$cpu")" && white "虚拟化类型:   $(blue "$vi")"
 white "$status"
