@@ -216,35 +216,35 @@ blue "已确认传输协议: ${hysteria_protocol}\n"
 
 insport(){
 dports(){
-readp "设置udp多端口(建议10000-65535之间，每次增加一个)：" manyports
+readp "\n设置多端口(建议10000-65535之间，每次仅增加一个)：" manyports
 iptables -t nat -A PREROUTING -p udp --dport $manyports  -j DNAT --to-destination :$port
 ip6tables -t nat -A PREROUTING -p udp --dport $manyports  -j DNAT --to-destination :$port
-blue "已确认转发的多端口：$manyports\n"
+blue "\n已确认转发的多端口：$manyports\n"
 echo -n $manyports, >> /root/HY/mports
 }
 
 arports(){
-readp "添加多端口，继续按回车，退出按任意键：" choose
+readp "\n添加多端口，继续按回车，退出按任意键：" choose
 if [[ -z $choose ]]; then
 until [[ -n $choose ]] && sed -i 's/.$//' /root/HY/mports
 do
-[[ -z $choose ]] && dports && readp "是否继续添加多端口？继续按回车，退出按任意键：" choose
+[[ -z $choose ]] && dports && readp "\n是否继续添加多端口？继续按回车，退出按任意键：" choose
 done
 fi
 }
 
 fports(){
-readp "设置udp范围端口的起始端口(建议10000-65535之间)：" firstudpport
-readp "设置udp范围端口的末尾端口(建议10000-65535之间，要比上面起始端口大)：" endudpport
+readp "\n添加一个范围端口的起始端口(建议10000-65535之间)：" firstudpport
+readp "\n添加一个范围端口的末尾端口(建议10000-65535之间，要比上面起始端口大)：" endudpport
 if [[ $firstudpport -ge $endudpport ]]; then
 until [[ $firstudpport -le $endudpport ]]
 do
-[[ $firstudpport -ge $endudpport ]] && yellow "\n起始端口小于末尾端口，人才！请重新输入起始/末尾端口" && readp "设置udp范围端口的起始端口(建议10000-65535之间)：" firstudpport && readp "\n设置udp范围端口的末尾端口(建议10000-65535之间，要比上面起始端口大)：" endudpport
+[[ $firstudpport -ge $endudpport ]] && yellow "\n起始端口小于末尾端口啦，人才！请重新输入起始/末尾端口" && readp "\n添加一个范围端口的起始端口(建议10000-65535之间)：" firstudpport && readp "\n添加一个范围端口的末尾端口(建议10000-65535之间，要比上面起始端口大)：" endudpport
 done
 fi
 iptables -t nat -A PREROUTING -p udp --dport $firstudpport:$endudpport  -j DNAT --to-destination :$port
 ip6tables -t nat -A PREROUTING -p udp --dport $firstudpport:$endudpport  -j DNAT --to-destination :$port
-blue "已确认转发的范围端口：$firstudpport 到 $endudpport\n"
+blue "\n已确认转发的范围端口：$firstudpport 到 $endudpport\n"
 }
 
 iptables -t nat -F PREROUTING >/dev/null 2>&1
@@ -262,9 +262,9 @@ do
 [[ -n $(ss -ntlp | awk '{print $4}' | grep -w "$port") ]] && yellow "\n端口被占用，请重新输入端口" && readp "自定义hysteria转发主端口:" port
 done
 fi
-blue "已确认转发主端口：$port\n"
+blue "\n已确认转发主端口：$port\n"
 if [[ ${hysteria_protocol} == "udp" || $(cat /etc/hysteria/config.json 2>/dev/null | grep protocol | awk '{print $2}' | awk -F '"' '{ print $2}') == "udp" ]]; then
-green "经检测，当前选择的是udp协议，支持端口无缝自动切换功能"
+green "\n经检测，当前选择的是udp协议，支持端口自动切换功能（默认每10秒切换）\n"
 readp "1. 继续使用默认单端口（回车默认）\n2. 使用多端口、范围端口的无缝自动切换功能\n请选择：" choose
 if [ -z "${choose}" ] || [ $choose == "1" ]; then
 echo
