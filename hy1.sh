@@ -224,7 +224,6 @@ echo -n $manyports, >> /root/HY/mports
 }
 
 arports(){
-rm -rf /root/HY/mports
 readp "添加多端口，继续按回车，退出按任意键：" choose
 if [[ -z $choose ]]; then
 until [[ -n $choose ]] && sed -i 's/.$//' /root/HY/mports
@@ -249,6 +248,7 @@ blue "已确认转发的范围端口：$firstudpport 到 $endudpport\n"
 }
 
 iptables -t nat -F PREROUTING >/dev/null 2>&1
+rm -rf /root/HY/mports
 readp "设置hysteria转发主端口[1-65535]（回车跳过为2000-65535之间的随机端口）：" port
 if [[ -z $port ]]; then
 port=$(shuf -i 2000-65535 -n 1)
@@ -640,7 +640,7 @@ fi
 oldport=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server | awk '{print $2}' | awk -F '"' '{ print $2}'| awk -F ':' '{ print $NF}'`
 servport=`cat /etc/hysteria/config.json 2>/dev/null  | awk '{print $2}' | sed -n 2p | tr -d ',:"'`
 echo
-blue "当前正在使用的转发端口：$oldport"
+blue "当前在使用的转发端口：$oldport 已全部作废，请赶紧设置哦"
 echo
 insport
 portss
@@ -654,7 +654,7 @@ hysteriashare
 
 changeserv(){
 green "hysteria配置变更选择如下:"
-readp "1. 切换IPV4/IPV6出站优先级\n2. 切换传输协议类型\n3. 切换证书类型(支持/root/ygkkkca路径上传自定义证书)\n4. 更换验证密码\n5. 变更多端口复用\n6. 返回上层\n请选择：" choose
+readp "1. 切换IPV4/IPV6出站优先级\n2. 切换传输协议类型\n3. 切换证书类型(支持/root/ygkkkca路径上传自定义证书)\n4. 更换验证密码\n5. 变更端口：单端口、多端口、范围端口（将重置所有端口重新分配）\n6. 返回上层\n请选择：" choose
 if [ $choose == "1" ];then
 changeip
 elif [ $choose == "2" ];then
