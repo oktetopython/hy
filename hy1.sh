@@ -615,7 +615,7 @@ rrpip="4" && chip && v4v6="仅IPV4：$ipv4"
 elif [[ $choose == "4" && -n $ipv6 ]]; then
 rrpip="6" && chip && v4v6="仅IPV6：$ipv6"
 else 
-red "无IPV4/IPV6优先选择项或者输入错误" && changeip
+red "当前不存在你选择的IPV4/IPV6地址，或者输入错误" && changeip
 fi
 blue "确定当前已更换的IP优先级：${v4v6}\n"
 }
