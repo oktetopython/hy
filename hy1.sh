@@ -730,14 +730,18 @@ wgcfv4=$(curl -s4m5 https://www.cloudflare.com/cdn-cgi/trace -k | grep warp | cu
 if [[ -n $(systemctl status hysteria-server 2>/dev/null | grep -w active) && -f '/etc/hysteria/config.json' ]]; then
 noprotocol=`cat /etc/hysteria/config.json 2>/dev/null | grep protocol | awk '{print $2}' | awk -F '"' '{ print $2}'`
 rpip=`cat /etc/hysteria/config.json 2>/dev/null | grep resolve_preference | awk '{print $2}' | awk -F '"' '{ print $2}'`
+v4=$(curl -s4m5 https://ip.gs -k)
+v6=$(curl -s6m5 https://ip.gs -k)
+[[ -z $v4 ]] && showv4='IPV4地址丢失，请切换至IPV6或者重装hysteria' || showv4=$v4
+[[ -z $v6 ]] && showv6='IPV6地址丢失，请切换至IPV4或者重装hysteria' || showv6=$v6
 if [[ $rpip = 64 ]]; then
-v4v6="IPV6优先：$(curl -s6m5 https://ip.gs -k)"
+v4v6="IPV6优先：$showv6"
 elif [[ $rpip = 46 ]]; then
-v4v6="IPV4优先：$(curl -s4m5 https://ip.gs -k)"
+v4v6="IPV4优先：$showv4"
 elif [[ $rpip = 4 ]]; then
-v4v6="仅IPV4：$(curl -s4m5 https://ip.gs -k)"
+v4v6="仅IPV4：$showv4"
 elif [[ $rpip = 6 ]]; then
-v4v6="仅IPV6：$(curl -s6m5 https://ip.gs -k)"
+v4v6="仅IPV6：$showv6"
 fi
 oldport=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server | awk '{print $2}' | awk -F '"' '{ print $2}'| awk -F ':' '{ print $NF}'`
 status=$(white "hysteria状态：\c";green "运行中";white "hysteria协议：\c";green "$noprotocol";white "优先出站IP：  \c";green "$v4v6   \c";white "可代理端口：\c";green "$oldport";white "WARP状态：    \c";eval echo \$wgcf)
