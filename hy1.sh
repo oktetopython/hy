@@ -332,8 +332,8 @@ cat <<EOF > /etc/hysteria/config.json
 EOF
 
 sureipadress(){
-ip=$(curl -s6m5 https://ip.gs -k) || ip=$(curl -s4m5 https://ip.gs -k)
-[[ -n $(echo $ip | grep ":") ]] && ymip="[$ip]" || ymip=$ip
+ip=$(curl -s4m5 https://ip.gs -k) || ip=$(curl -s6m5 https://ip.gs -k)
+[[ -n $(echo $ip | grep ".") ]] && ymip=$ip || ymip="[$ip]" 
 }
 
 wgcfv6=$(curl -s6m5 https://www.cloudflare.com/cdn-cgi/trace -k | grep warp | cut -d= -f2)
@@ -474,7 +474,7 @@ red "未正常安装hysteria!" && exit
 fi
 certclient(){
 sureipadress(){
-ip=$(curl -s6m5 https://ip.gs -k) || ip=$(curl -s4m5 https://ip.gs -k)
+ip=$(curl -s4m5 https://ip.gs -k) || ip=$(curl -s6m5 https://ip.gs -k)
 certificate=`cat /etc/hysteria/config.json 2>/dev/null | grep cert | awk '{print $2}' | awk -F '"' '{ print $2}'`
 if [[ $certificate = '/etc/hysteria/cert.crt' ]]; then
 if [[ -n $(curl -s6m5 https://ip.gs -k) ]]; then
@@ -701,8 +701,8 @@ white "$status\n"
 sureipadress(){
 certificate=`cat /etc/hysteria/config.json 2>/dev/null | grep cert | awk '{print $2}' | awk -F '"' '{ print $2}'`
 if [[ $certificate = '/etc/hysteria/cert.crt' ]]; then
-ip=$(curl -s6m5 https://ip.gs -k) || ip=$(curl -s4m5 https://ip.gs -k)
-[[ -n $(echo $ip | grep ":") ]] && ymip="[$ip]" || ymip=$ip
+ip=$(curl -s4m5 https://ip.gs -k) || ip=$(curl -s6m5 https://ip.gs -k)
+[[ -n $(echo $ip | grep ".") ]] && ymip=$ip || ymip="[$ip]"
 else
 ymip=$(cat /root/ygkkkca/ca.log)
 fi
