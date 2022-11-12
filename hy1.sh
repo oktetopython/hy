@@ -607,13 +607,13 @@ systemctl restart hysteria-server
 green "切换IPV4/IPV6出站优先级选择如下:"
 readp "1. IPV4优先\n2. IPV6优先\n3. 仅IPV4\n4. 仅IPV6\n请选择：" choose
 if [[ $choose == "1" && -n $ipv4 ]]; then
-rrpip="46" && chip && v4v6="IPV4优先：$(curl -s4 https://ip.gs -k)"
+rrpip="46" && chip && v4v6="IPV4优先：$ipv4"
 elif [[ $choose == "2" && -n $ipv6 ]]; then
-rrpip="64" && chip && v4v6="IPV6优先：$(curl -s6 https://ip.gs -k)"
+rrpip="64" && chip && v4v6="IPV6优先：$ipv6"
 elif [[ $choose == "3" && -n $ipv4 ]]; then
-rrpip="4" && chip && v4v6="仅IPV4：$(curl -s4 https://ip.gs -k)"
+rrpip="4" && chip && v4v6="仅IPV4：$ipv4"
 elif [[ $choose == "4" && -n $ipv6 ]]; then
-rrpip="6" && chip && v4v6="仅IPV6：$(curl -s6 https://ip.gs -k)"
+rrpip="6" && chip && v4v6="仅IPV6：$ipv6"
 else 
 red "无IPV4/IPV6优先选择项或者输入错误" && changeip
 fi
@@ -730,7 +730,15 @@ wgcfv4=$(curl -s4m5 https://www.cloudflare.com/cdn-cgi/trace -k | grep warp | cu
 if [[ -n $(systemctl status hysteria-server 2>/dev/null | grep -w active) && -f '/etc/hysteria/config.json' ]]; then
 noprotocol=`cat /etc/hysteria/config.json 2>/dev/null | grep protocol | awk '{print $2}' | awk -F '"' '{ print $2}'`
 rpip=`cat /etc/hysteria/config.json 2>/dev/null | grep resolve_preference | awk '{print $2}' | awk -F '"' '{ print $2}'`
-[[ $rpip = 64 ]] && v4v6="IPV6优先：$(curl -s6 https://ip.gs -k)" || v4v6="IPV4优先：$(curl -s4 https://ip.gs -k)"
+if [[ $rpip = 64 ]]; then
+v4v6="IPV6优先：$(curl -s6m5 https://ip.gs -k)"
+elif [[ $rpip = 46 ]]; then
+v4v6="IPV4优先：$(curl -s4m5 https://ip.gs -k)"
+elif [[ $rpip = 4 ]]; then
+v4v6="仅IPV4：$(curl -s4m5 https://ip.gs -k)"
+elif [[ $rpip = 6 ]]; then
+v4v6="仅IPV6：$(curl -s6m5 https://ip.gs -k)"
+fi
 oldport=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server | awk '{print $2}' | awk -F '"' '{ print $2}'| awk -F ':' '{ print $NF}'`
 status=$(white "hysteria状态：\c";green "运行中";white "hysteria协议：\c";green "$noprotocol";white "优先出站IP：  \c";green "$v4v6   \c";white "可代理端口：\c";green "$oldport";white "WARP状态：    \c";eval echo \$wgcf)
 elif [[ -z $(systemctl status hysteria-server 2>/dev/null | grep -w active) && -f '/etc/hysteria/config.json' ]]; then
