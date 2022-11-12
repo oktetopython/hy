@@ -173,7 +173,7 @@ if [[ -f /root/ygkkkca/ca.log ]]; then
 ym=$(cat /root/ygkkkca/ca.log)
 blue "检测到的域名：$ym ，已直接引用\n"
 else
-green "无本acme脚本申请证书记录，当前为自定义证书模式"
+green "无acme脚本申请证书记录，当前为自定义证书模式"
 readp "请输入已解析完成的域名:" ym
 blue "输入的域名：$ym，已直接引用\n"
 fi
