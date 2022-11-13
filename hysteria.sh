@@ -276,8 +276,6 @@ red "输入错误，请重新选择" && insport
 fi
 iptables -t nat -A PREROUTING -p udp --dport $port  -j DNAT --to-destination :$port
 ip6tables -t nat -A PREROUTING -p udp --dport $port  -j DNAT --to-destination :$port
-else
-red "输入错误，请重新选择" && insport
 fi
 netfilter-persistent save >/dev/null 2>&1
 }
