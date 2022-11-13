@@ -266,17 +266,10 @@ fi
 blue "\n已确认转发主端口：$port\n"
 if [[ ${hysteria_protocol} == "udp" || $(cat /etc/hysteria/config.json 2>/dev/null | grep protocol | awk '{print $2}' | awk -F '"' '{ print $2}') == "udp" ]]; then
 green "\n经检测，当前选择的是udp协议，支持端口自动切换功能（默认每10秒切换）\n"
-readp "1. 继续使用默认单端口（回车默认）\n2. 使用多端口、范围端口的无缝自动切换功能\n请选择：" choose
+readp "1. 继续使用默认单端口（回车默认）\n2. 使用范围端口的无缝自动切换功能\n请选择：" choose
 if [ -z "${choose}" ] || [ $choose == "1" ]; then
 echo
 elif [ $choose == "2" ]; then
-readp "1. 使用多端口\n2. 使用范围端口\n3. 使用多端口+范围端口\n请选择：" choose
-if [ $choose == "1" ]; then
-arports
-elif [ $choose == "2" ]; then
-fports
-elif [ $choose == "3" ]; then
-arports
 fports
 else
 red "输入错误，请重新选择" && insport
