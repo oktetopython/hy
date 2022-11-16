@@ -201,7 +201,7 @@ fi
 
 inspr(){
 green "hysteria的传输协议选择如下:"
-readp "1. udp（支持udp多端口跳跃功能，回车默认）\n2. wechat-video\n3. faketcp（仅支持linux客户端且需要root权限）\n请选择：" protocol
+readp "1. udp（支持多端口跳跃功能，回车默认）\n2. wechat-video\n3. faketcp（仅支持linux客户端且需要root权限）\n请选择：" protocol
 if [ -z "${protocol}" ] || [ $protocol == "1" ];then
 hysteria_protocol="udp"
 elif [ $protocol == "2" ];then
@@ -265,8 +265,8 @@ done
 fi
 blue "\n已确认转发主端口：$port\n"
 if [[ ${hysteria_protocol} == "udp" || $(cat /etc/hysteria/config.json 2>/dev/null | grep protocol | awk '{print $2}' | awk -F '"' '{ print $2}') == "udp" ]]; then
-green "\n经检测，当前选择的是udp协议，支持端口自动切换功能（默认每10秒切换）\n"
-readp "1. 继续使用默认单端口（回车默认）\n2. 使用范围端口的无缝自动切换功能\n请选择：" choose
+green "\n经检测，当前选择的是udp协议，可选择支持范围端口自动跳跃功能（默认每10秒切换）\n"
+readp "1. 继续使用默认单端口（回车默认）\n2. 使用范围端口（支持自动跳跃功能）\n请选择：" choose
 if [ -z "${choose}" ] || [ $choose == "1" ]; then
 echo
 elif [ $choose == "2" ]; then
