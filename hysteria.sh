@@ -201,7 +201,7 @@ fi
 
 inspr(){
 green "hysteria的传输协议选择如下:"
-readp "1. udp（支持多端口跳跃功能，回车默认）\n2. wechat-video\n3. faketcp（仅支持linux客户端且需要root权限）\n请选择：" protocol
+readp "1. udp（支持范围端口跳跃功能，回车默认）\n2. wechat-video\n3. faketcp（仅支持linux或者安卓客户端且需要root权限）\n请选择：" protocol
 if [ -z "${protocol}" ] || [ $protocol == "1" ];then
 hysteria_protocol="udp"
 elif [ $protocol == "2" ];then
@@ -649,7 +649,7 @@ hysteriashare
 
 changeserv(){
 green "hysteria配置变更选择如下:"
-readp "1. 切换IPV4/IPV6出站优先级\n2. 切换传输协议类型\n3. 切换证书类型(支持/root/ygkkkca路径上传自定义证书)\n4. 更换验证密码\n5. 变更主端口或者开启多端口范围跳跃功能（将重置所有端口）\n6. 返回上层\n请选择：" choose
+readp "1. 切换IPV4/IPV6出站优先级\n2. 切换传输协议类型\n3. 切换证书类型(支持/root/ygkkkca路径上传自定义证书)\n4. 更换验证密码\n5. 变更主端口或者开启范围端口范围跳跃功能（将重置所有端口）\n6. 返回上层\n请选择：" choose
 if [ $choose == "1" ];then
 changeip
 elif [ $choose == "2" ];then
@@ -778,7 +778,7 @@ red "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 green " 1. 安装hysteria（必选）" 
 green " 2. 卸载hysteria"
 white "----------------------------------------------------------------------------------"
-green " 3. 变更配置（IP优先级、传输协议、证书类型、验证密码、多端口动态复用）" 
+green " 3. 变更配置（IP优先级、传输协议、证书类型、验证密码、范围端口动态复用）" 
 green " 4. 关闭、开启、重启hysteria"   
 green " 5. 更新hysteria-yg安装脚本"  
 green " 6. 更新hysteria内核"
