@@ -796,7 +796,7 @@ echo -e "当前 hysteria-yg 安装脚本版本号：${bblue}${hyygV}${plain}"
 echo -e "检测到最新 hysteria-yg 安装脚本版本号：${yellow}${remoteV}${plain} ，可选择5进行更新\n"
 fi
 loVERSION="$(/usr/local/bin/hysteria -v | awk 'NR==1 {print $3}')"
-hyVERSION="v$(curl -s https://data.jsdelivr.com/v1/package/gh/HyNetwork/Hysteria | sed -n 4p | tr -d ',"' | awk '{print $1}')"
+hyVERSION="v$(curl -s https://data.jsdelivr.com/v1/package/gh/apernet/Hysteria | sed -n 4p | tr -d ',"' | awk '{print $1}')"
 if [ "${loVERSION}" = "${hyVERSION}" ]; then
 echo -e "当前 hysteria 已安装内核版本号：${bblue}${loVERSION}${plain} ，已是最新版本"
 else
