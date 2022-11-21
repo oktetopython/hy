@@ -356,8 +356,8 @@ cat <<EOF > /root/HY/acl/v2rayn.json
 {
 "server": "${ymip}:${clport}",
 "protocol": "${hysteria_protocol}",
-"up_mbps": 40,
-"down_mbps": 200,
+"up_mbps": 10,
+"down_mbps": 50,
 "alpn": "h3",
 "acl": "acl/routes.acl",
 "mmdb": "acl/Country.mmdb",
@@ -376,7 +376,7 @@ cat <<EOF > /root/HY/acl/v2rayn.json
 "insecure": ${ins},
 "retry": 3,
 "retry_interval": 3,
-"hop_interval": 10
+"hop_interval": 30
 }
 EOF
 }
@@ -706,7 +706,7 @@ ymip=$(cat /root/ygkkkca/ca.log)
 fi
 }
 wgcfgo
-url="hysteria://${ymip}:${port}?protocol=${hysteria_protocol}&auth=${pswd}&peer=${ym}&insecure=${ins}&upmbps=40&downmbps=200&alpn=h3#hysteria-ygkkk"
+url="hysteria://${ymip}:${port}?protocol=${hysteria_protocol}&auth=${pswd}&peer=${ym}&insecure=${ins}&upmbps=10&downmbps=50&alpn=h3#hysteria-ygkkk"
 echo ${url} > /root/HY/URL.txt
 red "======================================================================================"
 green "hysteria代理服务安装完成，生成脚本的快捷方式为 hy" && sleep 3
