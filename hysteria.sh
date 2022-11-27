@@ -376,7 +376,8 @@ cat <<EOF > /root/HY/acl/v2rayn.json
 "insecure": ${ins},
 "retry": 3,
 "retry_interval": 3,
-"hop_interval": 30
+"fast_open": true,
+"hop_interval": 60
 }
 EOF
 }
