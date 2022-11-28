@@ -216,24 +216,6 @@ blue "已确认传输协议: ${hysteria_protocol}\n"
 }
 
 insport(){
-dports(){
-readp "\n设置多端口(建议10000-65535之间，每次仅增加一个)：" manyports
-iptables -t nat -A PREROUTING -p udp --dport $manyports  -j DNAT --to-destination :$port
-ip6tables -t nat -A PREROUTING -p udp --dport $manyports  -j DNAT --to-destination :$port
-blue "\n已确认转发的多端口：$manyports\n"
-echo -n $manyports, >> /root/HY/mports
-}
-
-arports(){
-readp "\n添加多端口，继续按回车，退出按任意键：" choose
-if [[ -z $choose ]]; then
-until [[ -n $choose ]] && sed -i 's/.$//' /root/HY/mports
-do
-[[ -z $choose ]] && dports && readp "\n是否继续添加多端口？继续按回车，退出按任意键：" choose
-done
-fi
-}
-
 fports(){
 readp "\n添加一个范围端口的起始端口(建议10000-65535之间)：" firstudpport
 readp "\n添加一个范围端口的末尾端口(建议10000-65535之间，要比上面起始端口大)：" endudpport
@@ -245,11 +227,11 @@ done
 fi
 iptables -t nat -A PREROUTING -p udp --dport $firstudpport:$endudpport  -j DNAT --to-destination :$port
 ip6tables -t nat -A PREROUTING -p udp --dport $firstudpport:$endudpport  -j DNAT --to-destination :$port
+netfilter-persistent save >/dev/null 2>&1
 blue "\n已确认转发的范围端口：$firstudpport 到 $endudpport\n"
 }
 
 iptables -t nat -F PREROUTING >/dev/null 2>&1
-rm -rf /root/HY/mports
 readp "设置hysteria转发主端口[1-65535]（回车跳过为2000-65535之间的随机端口）：" port
 if [[ -z $port ]]; then
 port=$(shuf -i 2000-65535 -n 1)
@@ -265,8 +247,8 @@ done
 fi
 blue "\n已确认转发主端口：$port\n"
 if [[ ${hysteria_protocol} == "udp" || $(cat /etc/hysteria/config.json 2>/dev/null | grep protocol | awk '{print $2}' | awk -F '"' '{ print $2}') == "udp" ]]; then
-green "\n经检测，当前选择的是udp协议，可选择支持范围端口自动跳跃功能（默认每10秒切换）\n"
-readp "1. 继续使用默认单端口（回车默认）\n2. 使用范围端口（支持自动跳跃功能）\n请选择：" choose
+green "\n经检测，当前选择的是udp协议，可选择支持范围端口自动跳跃功能\n"
+readp "1. 继续使用单端口（回车默认）\n2. 使用范围端口（支持自动跳跃功能）\n请选择：" choose
 if [ -z "${choose}" ] || [ $choose == "1" ]; then
 echo
 elif [ $choose == "2" ]; then
@@ -274,10 +256,9 @@ fports
 else
 red "输入错误，请重新选择" && insport
 fi
-iptables -t nat -A PREROUTING -p udp --dport $port  -j DNAT --to-destination :$port
-ip6tables -t nat -A PREROUTING -p udp --dport $port  -j DNAT --to-destination :$port
+else
+green "\n经检测，当前并不是udp协议，将继续使用单端口\n"
 fi
-netfilter-persistent save >/dev/null 2>&1
 }
 
 inspswd(){
@@ -296,14 +277,9 @@ blue "已确认验证密码：${pswd}\n"
 }
 
 portss(){
-manyports=`cat /root/HY/mports 2>/dev/null`
-if [[ -z $firstudpport && -z $manyports ]]; then
+if [[ -z $firstudpport ]]; then
 clport=$port
-elif [[ -n $firstudpport && -n $manyports ]]; then
-clport="$port,$manyports,$firstudpport-$endudpport"
-elif [[ -z $firstudpport ]]; then
-clport="$port,$manyports"
-elif [[ -z $manyports ]]; then
+else
 clport="$port,$firstudpport-$endudpport"
 fi
 }
