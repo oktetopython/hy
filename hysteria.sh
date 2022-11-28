@@ -356,8 +356,8 @@ cat <<EOF > /root/HY/acl/v2rayn.json
 {
 "server": "${ymip}:${clport}",
 "protocol": "${hysteria_protocol}",
-"up_mbps": 10,
-"down_mbps": 50,
+"up_mbps": 20,
+"down_mbps": 100,
 "alpn": "h3",
 "acl": "acl/routes.acl",
 "mmdb": "acl/Country.mmdb",
