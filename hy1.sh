@@ -164,7 +164,6 @@ ym=www.bing.com
 certificatep='/etc/hysteria/private.key'
 certificatec='/etc/hysteria/cert.crt'
 blue "已确认证书模式: www.bing.com自签证书\n"
-
 elif [ $certificate == "2" ]; then
 if [[ -f /root/ygkkkca/cert.crt && -f /root/ygkkkca/private.key ]] && [[ -s /root/ygkkkca/cert.crt && -s /root/ygkkkca/private.key ]]; then
 blue "经检测，之前已使用此acme脚本申请过证书"
@@ -332,8 +331,10 @@ fi
 
 if [[ $ym = www.bing.com ]]; then
 ins=true
-else
+elif [[ -n $(cat /root/ygkkkca/ca.log) ]]; then
 ym=$(cat /root/ygkkkca/ca.log)
+ymip=$ym;ins=false
+else
 ymip=$ym;ins=false
 fi
 
@@ -508,7 +509,6 @@ rules:
   - GEOIP,CN,DIRECT
   - MATCH,PROXY
 EOF
-
 }
 
 unins(){
