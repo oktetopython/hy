@@ -333,9 +333,9 @@ if [[ $ym = www.bing.com ]]; then
 ins=true
 elif [[ -n $(cat /root/ygkkkca/ca.log) ]]; then
 ym=$(cat /root/ygkkkca/ca.log)
-ymip=$ym;ins=false
+Cymip=$ym;ymip=$ym;ins=false
 else
-ymip=$ym;ins=false
+Cymip=$ym;ymip=$ym;ins=false
 fi
 
 portss
@@ -391,7 +391,7 @@ dns:
 proxies:
   - name: "hysteria-ygkkk"
     type: hysteria
-    server: ${ymip}
+    server: ${Cymip}
     port: $port
     auth_str: ${pswd}
     alpn:
@@ -720,11 +720,11 @@ sureipadress(){
 if [[ $certificate = '/etc/hysteria/cert.crt' && -n $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/\[$oldserver\]/${ymip}/g" /root/HY/acl/v2rayn.json
 sed -i "s/\[$oldserver\]/${ymip}/g" /root/HY/URL.txt
-sed -i "23s/\[$oldserver\]/${ymip}/g" /root/HY/acl/Cmeta-hy.yaml
+sed -i "23s/$oldserver/${ymip}/g" /root/HY/acl/Cmeta-hy.yaml
 elif [[ $certificate = '/root/ygkkkca/cert.crt' && -n $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/$oldserver/\[${ymip}\]/g" /root/HY/acl/v2rayn.json
 sed -i "s/$oldserver/\[${ymip}\]/" /root/HY/URL.txt
-sed -i "23s/$oldserver/\[${ymip}\]/g" /root/HY/acl/Cmeta-hy.yaml
+sed -i "23s/$oldserver/${ymip}/g" /root/HY/acl/Cmeta-hy.yaml
 elif [[ $certificate = '/root/ygkkkca/cert.crt' && -z $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/$oldserver/${ymip}/g" /root/HY/acl/v2rayn.json
 sed -i "s/$oldserver/${ymip}/" /root/HY/URL.txt
