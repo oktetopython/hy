@@ -624,63 +624,30 @@ fi
 }
 wgcfgo
 }
-servername=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server_name | awk '{print $2}' | awk -F '"' '{ print $2}'`
-certificate=`cat /etc/hysteria/config.json 2>/dev/null | grep cert | awk '{print $2}' | awk -F '"' '{ print $2}'`
-if [[ $certificate = '/etc/hysteria/cert.crt' ]]; then
-certificatepp='/etc/hysteria/private.key'
-certificatecc='/etc/hysteria/cert.crt'
-blue "当前正在使用的证书：bing自签证书，可更换为acme申请证书或已上传root/ygkkkca目录的自定义证书"
-echo
-readp "是否切换？（回车为是。其他选择为否，并返回主菜单）\n请选择：" choose
-if [ -z "${choose}" ]; then
-if [[ -f /root/ygkkkca/cert.crt && -f /root/ygkkkca/private.key ]] && [[ -s /root/ygkkkca/cert.crt && -s /root/ygkkkca/private.key ]]; then
-blue "经检测，root/ygkkkca目录下有证书文件（cert.crt与private.key）"
-readp "1. 直接使用root/ygkkkca目录下申请过证书（回车默认）\n2. 删除原来的证书，重新申请acme证书\n请选择：" certacme
-if [ -z "${certacme}" ] || [ $certacme == "1" ]; then
-if [[ -f /root/ygkkkca/ca.log ]]; then
-ym=$(cat /root/ygkkkca/ca.log)
-blue "检测到的域名：$ym ，已直接引用\n"
-else
-green "无本acme脚本申请证书记录，当前为自定义证书模式"
-readp "请输入已解析完成的域名:" ym
-blue "输入的域名：$ym，已直接引用\n"
-fi
-elif [ $certacme == "2" ]; then 
-curl https://get.acme.sh | sh
-bash /root/.acme.sh/acme.sh --uninstall
-rm -rf /root/ygkkkca
-rm -rf ~/.acme.sh acme.sh
-sed -i '/--cron/d' /etc/crontab
-[[ -z $(/root/.acme.sh/acme.sh -v 2>/dev/null) ]] && green "acme.sh卸载完毕" || red "acme.sh卸载失败"
-wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /root/ygkkkca/ca.log 2>/dev/null)
-if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
-red "证书申请失败，脚本退出" && exit
-fi
-fi
-else
-wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /root/ygkkkca/ca.log 2>/dev/null)
-if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
-red "证书申请失败，脚本退出" && exit
-fi
-fi
-certificatep='/root/ygkkkca/private.key'
-certificatec='/root/ygkkkca/cert.crt'
-certclient
-sed -i '21s/true/false/g' /root/HY/acl/v2rayn.json
-sed -i 's/true/false/g' /root/HY/URL.txt
-sed -i '32s/true/false/g' /root/HY/acl/Cmeta-hy.yaml
-else
-hy
-fi
-else
+
+whcertificate(){
+if [[ -f /root/ygkkkca/cert.crt ]]; then
 certificatepp='/root/ygkkkca/private.key'
 certificatecc='/root/ygkkkca/cert.crt'
-blue "当前正在使用的证书：acme申请的证书，可更换为bing自签证书"
-echo
-readp "是否切换？（回车为是。其他选择为否，并返回主菜单）\n请选择：" choose
-if [ -z "${choose}" ]; then
+elif [[ -f /etc/hysteria/cert.crt ]]; then
+certificatepp='/etc/hysteria/private.key'
+certificatecc='/etc/hysteria/cert.crt'
+else
+readp "请输入原公钥文件crt的路径（/a/b/……/cert.crt）：" cerroad
+blue "公钥文件crt的路径：$cerroad "
+readp "请输入原密钥文件key的路径（/a/b/……/private.key）：" keyroad
+blue "密钥文件key的路径：$keyroad "
+certificatepp=$keyroad
+certificatecc=$cerroad
+fi
+}
+
+servername=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server_name | awk '{print $2}' | awk -F '"' '{ print $2}'`
+certificate=`cat /etc/hysteria/config.json 2>/dev/null | grep cert | awk '{print $2}' | awk -F '"' '{ print $2}'`
+green "hysteria协议证书切换:"
+readp "1. www.bing.com自签证书（回车默认）\n2. acme一键申请证书脚本（支持常规80端口模式与dns api模式），已用此脚本申请的证书则自动识别\n3. 自定义证书路径（非/root/ygkkkca路径）\n请选择：" certificate
+if [ -z "${certificate}" ] || [ $certificate == "1" ]; then
+whcertificate
 if [[ -f /etc/hysteria/cert.crt && -f /etc/hysteria/private.key ]]; then
 ym=www.bing.com
 blue "经检测，之前已申请过自签证书，已直接引用\n"
@@ -695,9 +662,58 @@ certclient
 sed -i '21s/false/true/g' /root/HY/acl/v2rayn.json
 sed -i 's/false/true/g' /root/HY/URL.txt
 sed -i '32s/false/true/g' /root/HY/acl/Cmeta-hy.yaml
-else
-hy
+blue "已确认证书模式: www.bing.com自签证书\n"
+elif [ $certificate == "2" ]; then
+whcertificate
+if [[ -f /root/ygkkkca/cert.crt && -f /root/ygkkkca/private.key ]] && [[ -s /root/ygkkkca/cert.crt && -s /root/ygkkkca/private.key ]]; then
+blue "经检测，之前已使用此acme脚本申请过证书"
+readp "1. 直接使用root/ygkkkca目录下申请过证书（回车默认）\n2. 删除原来的证书，重新申请acme证书\n请选择：" certacme
+if [ -z "${certacme}" ] || [ $certacme == "1" ]; then
+ym=$(cat /root/ygkkkca/ca.log)
+blue "检测到的域名：$ym ，已直接引用\n"
+elif [ $certacme == "2" ]; then
+curl https://get.acme.sh | sh
+bash /root/.acme.sh/acme.sh --uninstall
+rm -rf /root/ygkkkca
+rm -rf ~/.acme.sh acme.sh
+sed -i '/--cron/d' /etc/crontab
+[[ -z $(/root/.acme.sh/acme.sh -v 2>/dev/null) ]] && green "acme.sh卸载完毕" || red "acme.sh卸载失败"
+sleep 2
+wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
+ym=$(cat /root/ygkkkca/ca.log)
+if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
+red "证书申请失败，脚本退出" && exit
 fi
+fi
+else
+wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
+ym=$(cat /root/ygkkkca/ca.log)
+if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
+red "证书申请失败，脚本退出" && exit
+fi
+fi
+certificatec='/root/ygkkkca/cert.crt'
+certificatep='/root/ygkkkca/private.key'
+certclient
+sed -i '21s/true/false/g' /root/HY/acl/v2rayn.json
+sed -i 's/true/false/g' /root/HY/URL.txt
+sed -i '32s/true/false/g' /root/HY/acl/Cmeta-hy.yaml
+elif [ $certificate == "3" ]; then
+whcertificate
+readp "请输入已放置好的公钥文件crt的路径（/a/b/……/cert.crt）：" cerroad
+blue "公钥文件crt的路径：$cerroad "
+readp "请输入已放置好的密钥文件key的路径（/a/b/……/private.key）：" keyroad
+blue "密钥文件key的路径：$keyroad "
+certificatec=$cerroad
+certificatep=$keyroad
+readp "请输入已解析好的域名:" ym
+blue "已解析好的域名：$ym "
+certclient
+sed -i '21s/true/false/g' /root/HY/acl/v2rayn.json
+sed -i 's/true/false/g' /root/HY/URL.txt
+sed -i '32s/true/false/g' /root/HY/acl/Cmeta-hy.yaml
+else 
+red "输入错误，请重新选择" && changecertificate
 fi
 
 sureipadress(){
