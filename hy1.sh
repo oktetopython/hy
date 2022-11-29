@@ -357,7 +357,7 @@ cat <<EOF > /root/HY/acl/v2rayn.json
 }
 EOF
 
-cat <<EOF > /root/HY/acl/clash-meta-hy.yaml
+cat <<EOF > /root/HY/acl/Cmeta-hy.yaml
 mixed-port: 7890
 allow-lan: true
 mode: rule
@@ -581,6 +581,7 @@ inspr
 sed -i "s/$noprotocol/$hysteria_protocol/g" /etc/hysteria/config.json
 sed -i "3s/$noprotocol/$hysteria_protocol/g" /root/HY/acl/v2rayn.json
 sed -i "s/$noprotocol/$hysteria_protocol/g" /root/HY/URL.txt
+sed -i "28s/$noprotocol/$hysteria_protocol/g" /root/HY/acl/Cmeta-hy.yaml
 systemctl restart hysteria-server
 blue "hysteria代理服务的协议已由 $noprotocol 更换为 $hysteria_protocol ，配置已更新 "
 hysteriashare
@@ -659,6 +660,7 @@ certificatec='/root/ygkkkca/cert.crt'
 certclient
 sed -i '21s/true/false/g' /root/HY/acl/v2rayn.json
 sed -i 's/true/false/g' /root/HY/URL.txt
+sed -i '32s/true/false/g' /root/HY/acl/Cmeta-hy.yaml
 else
 hy
 fi
@@ -682,6 +684,7 @@ certificatec='/etc/hysteria/cert.crt'
 certclient
 sed -i '21s/false/true/g' /root/HY/acl/v2rayn.json
 sed -i 's/false/true/g' /root/HY/URL.txt
+sed -i '32s/false/true/g' /root/HY/acl/Cmeta-hy.yaml
 else
 hy
 fi
@@ -691,20 +694,25 @@ sureipadress(){
 if [[ $certificate = '/etc/hysteria/cert.crt' && -n $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/\[$oldserver\]/${ymip}/g" /root/HY/acl/v2rayn.json
 sed -i "s/\[$oldserver\]/${ymip}/g" /root/HY/URL.txt
+sed -i "23s/\[$oldserver\]/${ymip}/g" /root/HY/acl/Cmeta-hy.yaml
 elif [[ $certificate = '/root/ygkkkca/cert.crt' && -n $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/$oldserver/\[${ymip}\]/g" /root/HY/acl/v2rayn.json
 sed -i "s/$oldserver/\[${ymip}\]/" /root/HY/URL.txt
+sed -i "23s/$oldserver/\[${ymip}\]/g" /root/HY/acl/Cmeta-hy.yaml
 elif [[ $certificate = '/root/ygkkkca/cert.crt' && -z $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/$oldserver/${ymip}/g" /root/HY/acl/v2rayn.json
 sed -i "s/$oldserver/${ymip}/" /root/HY/URL.txt
+sed -i "23s/$oldserver/${ymip}/g" /root/HY/acl/Cmeta-hy.yaml
 elif [[ $certificate = '/etc/hysteria/cert.crt' && -z $(curl -s6m5 https://ip.gs -k) ]]; then
 sed -i "2s/$oldserver/${ymip}/g" /root/HY/acl/v2rayn.json
 sed -i "s/$oldserver/${ymip}/g" /root/HY/URL.txt
+sed -i "23s/$oldserver/${ymip}/g" /root/HY/acl/Cmeta-hy.yaml
 fi
 }
 wgcfgo
 sed -i "s/$servername/$ym/g" /root/HY/acl/v2rayn.json
 sed -i "s/$servername/$ym/g" /root/HY/URL.txt
+sed -i "31s/$servername/$ym/g" /root/HY/acl/Cmeta-hy.yaml
 sed -i "s!$certificatepp!$certificatep!g" /etc/hysteria/config.json
 sed -i "s!$certificatecc!$certificatec!g" /etc/hysteria/config.json
 systemctl restart hysteria-server
@@ -750,6 +758,7 @@ inspswd
 sed -i "8s/$oldpswd/$pswd/g" /etc/hysteria/config.json
 sed -i "19s/$oldpswd/$pswd/g" /root/HY/acl/v2rayn.json
 sed -i "s/$oldpswd/$pswd/g" /root/HY/URL.txt
+sed -i "25s/$oldpswd/$pswd/g" /root/HY/acl/Cmeta-hy.yaml
 systemctl restart hysteria-server
 blue "hysteria代理服务的验证密码已由 $oldpswd 更换为 $pswd ，配置已更新 "
 hysteriashare
@@ -769,6 +778,7 @@ portss
 sed -i "2s/$servport/$port/g" /etc/hysteria/config.json
 sed -i "2s/$oldport/$clport/g" /root/HY/acl/v2rayn.json
 sed -i "s/$servport/$port/g" /root/HY/URL.txt
+sed -i "24s/$servport/$port/g" /root/HY/acl/Cmeta-hy.yaml
 systemctl restart hysteria-server
 blue "hysteria代理服务的转发主端口已由 $servport 更换为 $port ，配置已更新 "
 hysteriashare
