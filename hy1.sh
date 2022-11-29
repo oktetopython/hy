@@ -156,7 +156,7 @@ rm -rf install_server.sh
 
 inscertificate(){
 green "hysteria协议证书申请方式选择如下:"
-readp "1. www.bing.com自签证书（回车默认）\n2. acme一键申请证书脚本（支持常规80端口模式与dns api模式）或已放置在/root/ygkkkca目录的自定义证书\n请选择：" certificate
+readp "1. www.bing.com自签证书（回车默认）\n2. acme一键申请证书脚本（支持常规80端口模式与dns api模式），已用此脚本申请的证书则自动识别\n3. 自定义证书路径（非/root/ygkkkca路径）\n请选择：" certificate
 if [ -z "${certificate}" ] || [ $certificate == "1" ]; then
 openssl ecparam -genkey -name prime256v1 -out /etc/hysteria/private.key
 openssl req -new -x509 -days 36500 -key /etc/hysteria/private.key -out /etc/hysteria/cert.crt -subj "/CN=www.bing.com"
@@ -164,36 +164,46 @@ ym=www.bing.com
 certificatep='/etc/hysteria/private.key'
 certificatec='/etc/hysteria/cert.crt'
 blue "已确认证书模式: www.bing.com自签证书\n"
+
 elif [ $certificate == "2" ]; then
 if [[ -f /root/ygkkkca/cert.crt && -f /root/ygkkkca/private.key ]] && [[ -s /root/ygkkkca/cert.crt && -s /root/ygkkkca/private.key ]]; then
-blue "经检测，root/ygkkkca目录下有证书文件（cert.crt与private.key）"
+blue "经检测，之前已使用此acme脚本申请过证书"
 readp "1. 直接使用root/ygkkkca目录下申请过证书（回车默认）\n2. 删除原来的证书，重新申请acme证书\n请选择：" certacme
 if [ -z "${certacme}" ] || [ $certacme == "1" ]; then
-if [[ -f /root/ygkkkca/ca.log ]]; then
 ym=$(cat /root/ygkkkca/ca.log)
 blue "检测到的域名：$ym ，已直接引用\n"
-else
-green "无acme脚本申请证书记录，当前为自定义证书模式"
-readp "请输入已解析完成的域名:" ym
-blue "输入的域名：$ym，已直接引用\n"
-fi
 elif [ $certacme == "2" ]; then
+curl https://get.acme.sh | sh
+bash /root/.acme.sh/acme.sh --uninstall
 rm -rf /root/ygkkkca
+rm -rf ~/.acme.sh acme.sh
+sed -i '/--cron/d' /etc/crontab
+[[ -z $(/root/.acme.sh/acme.sh -v 2>/dev/null) ]] && green "acme.sh卸载完毕" || red "acme.sh卸载失败"
+sleep 2
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /root/ygkkkca/ca.log 2>/dev/null)
+ym=$(cat /root/ygkkkca/ca.log)
 if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
 red "证书申请失败，脚本退出" && exit
 fi
 fi
 else
 wget -N https://gitlab.com/rwkgyg/acme-script/raw/main/acme.sh && bash acme.sh
-ym=$(cat /root/ygkkkca/ca.log 2>/dev/null)
+ym=$(cat /root/ygkkkca/ca.log)
 if [[ ! -f /root/ygkkkca/cert.crt && ! -f /root/ygkkkca/private.key ]] && [[ ! -s /root/ygkkkca/cert.crt && ! -s /root/ygkkkca/private.key ]]; then
 red "证书申请失败，脚本退出" && exit
 fi
 fi
-certificatep='/root/ygkkkca/private.key'
 certificatec='/root/ygkkkca/cert.crt'
+certificatep='/root/ygkkkca/private.key'
+elif [ $certificate == "3" ]; then
+readp "请输入已放置好的公钥文件crt的路径（/a/b/……/cert.crt）：" cerroad
+blue "公钥文件crt的路径：$cerroad "
+readp "请输入已放置好的密钥文件key的路径（/a/b/……/private.key）：" keyroad
+blue "密钥文件key的路径：$keyroad "
+certificatec=$cerroad
+certificatep=$keyroad
+readp "请输入已解析好的域名:" ym
+blue "已解析好的域名：$ym "
 else 
 red "输入错误，请重新选择" && inscertificate
 fi
