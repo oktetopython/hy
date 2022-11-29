@@ -626,10 +626,10 @@ wgcfgo
 }
 
 whcertificate(){
-if [[ -f /root/ygkkkca/cert.crt ]]; then
+if [[ -n $(cat /etc/hysteria/config.json 2>/dev/null | sed -n 12p | grep -w ygkkkca) ]]; then
 certificatepp='/root/ygkkkca/private.key'
 certificatecc='/root/ygkkkca/cert.crt'
-elif [[ -f /etc/hysteria/cert.crt ]]; then
+elif [[ -n $(cat /etc/hysteria/config.json 2>/dev/null | sed -n 12p | grep -w hysteria) ]]; then
 certificatepp='/etc/hysteria/private.key'
 certificatecc='/etc/hysteria/cert.crt'
 else
