@@ -866,15 +866,15 @@ url="hysteria://${ymip}:${port}?protocol=${hysteria_protocol}&auth=${pswd}&peer=
 echo ${url} > /root/HY/URL.txt
 red "======================================================================================"
 green "hysteria代理服务安装完成，生成脚本的快捷方式为 hy" && sleep 3
+blue "\n分享链接保存到 /root/HY/URL.txt" && sleep 3
+yellow "${url}\n"
+green "二维码分享链接如下(SagerNet / Matsuri / 小火箭)" && sleep 3
+qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
 blue "\nv2rayn客户端配置文件v2rayn.json 、Clash-Meta客户端配置文件Cmeta-hy.yaml、acl代理规则文件都保存到 /root/HY/acl\n" && sleep 3
 blue "v2rayn客户端配置文件v2rayn.json内容如下，可直接复制" && sleep 3
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
 blue "Clash-Meta客户端配置文件Cmeta-hy.yaml内容如下，可直接复制" && sleep 3
-yellow "$(cat /root/HY/acl/Cmeta-hy.yaml)\n"
-blue "分享链接保存到 /root/HY/URL.txt" && sleep 3
-yellow "${url}\n"
-green "二维码分享链接如下(SagerNet / Matsuri / 小火箭)" && sleep 3
-qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
+yellow "$(cat /root/HY/acl/Cmeta-hy.yaml)"
 else
 red "hysteria代理服务安装失败，请运行 systemctl status hysteria-server 查看服务日志" && exit
 fi
@@ -917,14 +917,14 @@ red "===========================================================================
 oldport=`cat /root/HY/acl/v2rayn.json 2>/dev/null | grep -w server | awk '{print $2}' | awk -F '"' '{ print $2}'| awk -F ':' '{ print $NF}'`
 green "\n当前hysteria代理正在使用的端口：" && sleep 2
 blue "$oldport\n"
-green "当前v2rayn客户端配置文件v2rayn.json内容如下，保存到 /root/HY/acl/v2rayn.json\n" && sleep 2
-yellow "$(cat /root/HY/acl/v2rayn.json)\n"
-green "当前Clash-Meta客户端配置文件Cmeta-hy.yaml内容如下，保存到 /root/HY/acl/Cmeta-hy.yaml\n" && sleep 2
-yellow "$(cat /root/HY/acl/Cmeta-hy.yaml)\n"
 green "当前hysteria节点分享链接如下，保存到 /root/HY/URL.txt" && sleep 2
 yellow "$(cat /root/HY/URL.txt)\n"
 green "当前hysteria节点二维码分享链接如下(SagerNet / Matsuri / 小火箭)" && sleep 2
 qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
+green "\n当前v2rayn客户端配置文件v2rayn.json内容如下，保存到 /root/HY/acl/v2rayn.json" && sleep 2
+yellow "$(cat /root/HY/acl/v2rayn.json)\n"
+green "当前Clash-Meta客户端配置文件Cmeta-hy.yaml内容如下，保存到 /root/HY/acl/Cmeta-hy.yaml" && sleep 2
+yellow "$(cat /root/HY/acl/Cmeta-hy.yaml)"
 }
 
 start_menu(){
