@@ -357,7 +357,7 @@ cat <<EOF > /root/HY/acl/v2rayn.json
 }
 EOF
 
-cat <<EOF > /etc/hihy/result/metaHys.yaml
+cat <<EOF > /root/HY/acl/clash-meta-hy.yaml
 mixed-port: 7890
 allow-lan: true
 mode: rule
