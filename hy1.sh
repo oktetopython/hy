@@ -812,7 +812,7 @@ hysteriashare
 
 changeserv(){
 green "hysteria配置变更选择如下:"
-readp "1. 切换IP出站优先级（四模式）\n2. 切换传输协议类型\n3. 切换证书类型(支持/root/ygkkkca路径上传自定义证书)\n4. 更换验证密码\n5. 变更主端口或者开启范围端口范围跳跃功能（将重置所有端口）\n6. 返回上层\n请选择：" choose
+readp "1. 切换IP出站优先级（四模式）\n2. 切换传输协议（udp / wechat-video / faketcp）\n3. 切换证书类型（自签证书 / ACME证书 / 自定义路径证书）\n4. 更换验证密码\n5. 变更单端口或者开启范围端口跳跃功能（将重置所有端口）\n6. 返回上层\n请选择：" choose
 if [ $choose == "1" ];then
 changeip
 elif [ $choose == "2" ];then
@@ -951,7 +951,7 @@ green " 4. 关闭、开启、重启hysteria"
 green " 5. 更新hysteria-yg安装脚本"  
 green " 6. 更新hysteria内核"
 white "----------------------------------------------------------------------------------"
-green " 7. 显示当前hysteria分享链接、V2rayN配置文件、二维码"
+green " 7. 显示当前hysteria分享链接、二维码、V2rayN配置文件、Clash-meta配置文件"
 green " 8. ACME证书管理菜单"
 green " 9. 安装WARP（可选）"
 green " 0. 退出脚本"
