@@ -330,7 +330,7 @@ systemctl start wg-quick@wgcf >/dev/null 2>&1
 fi
 
 if [[ $ym = www.bing.com ]]; then
-ins=true
+Cymip=$ip;ins=true
 elif [[ -n $(cat /root/ygkkkca/ca.log) ]]; then
 ym=$(cat /root/ygkkkca/ca.log)
 Cymip=$ym;ymip=$ym;ins=false
