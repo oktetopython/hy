@@ -409,7 +409,7 @@ proxy-groups:
   - name: "PROXY"
     type: select
     proxies:
-     - hysteria-${Cymip}
+     - hysteria-ygkkk
 rule-providers:
   reject:
     type: http
