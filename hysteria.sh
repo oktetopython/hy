@@ -65,9 +65,9 @@ systemctl stop wg-quick@wgcf >/dev/null 2>&1
 kill -15 $(pgrep warp-go) >/dev/null 2>&1 && sleep 2
 sureipadress
 systemctl start wg-quick@wgcf >/dev/null 2>&1
-systemctl restart warp-go
-systemctl enable warp-go
-systemctl start warp-go
+systemctl restart warp-go >/dev/null 2>&1
+systemctl enable warp-go >/dev/null 2>&1
+systemctl start warp-go >/dev/null 2>&1
 fi
 }
 
@@ -336,9 +336,9 @@ systemctl stop wg-quick@wgcf >/dev/null 2>&1
 kill -15 $(pgrep warp-go) >/dev/null 2>&1 && sleep 2
 sureipadress
 systemctl start wg-quick@wgcf >/dev/null 2>&1
-systemctl restart warp-go
-systemctl enable warp-go
-systemctl start warp-go
+systemctl restart warp-go >/dev/null 2>&1
+systemctl enable warp-go >/dev/null 2>&1
+systemctl start warp-go >/dev/null 2>&1
 fi
 
 if [[ $ym = www.bing.com ]]; then
