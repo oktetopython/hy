@@ -62,8 +62,12 @@ if [[ ! $wgcfv4 =~ on|plus && ! $wgcfv6 =~ on|plus ]]; then
 sureipadress
 else
 systemctl stop wg-quick@wgcf >/dev/null 2>&1
+kill -15 $(pgrep warp-go) >/dev/null 2>&1 && sleep 2
 sureipadress
 systemctl start wg-quick@wgcf >/dev/null 2>&1
+systemctl restart warp-go
+systemctl enable warp-go
+systemctl start warp-go
 fi
 }
 
@@ -329,8 +333,12 @@ if [[ ! $wgcfv4 =~ on|plus && ! $wgcfv6 =~ on|plus ]]; then
 sureipadress
 else
 systemctl stop wg-quick@wgcf >/dev/null 2>&1
+kill -15 $(pgrep warp-go) >/dev/null 2>&1 && sleep 2
 sureipadress
 systemctl start wg-quick@wgcf >/dev/null 2>&1
+systemctl restart warp-go
+systemctl enable warp-go
+systemctl start warp-go
 fi
 
 if [[ $ym = www.bing.com ]]; then
