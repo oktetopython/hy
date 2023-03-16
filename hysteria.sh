@@ -377,6 +377,7 @@ cat <<EOF > /root/HY/acl/v2rayn.json
 "retry": 3,
 "retry_interval": 3,
 "fast_open": true,
+"lazy_start": true,
 "hop_interval": 60
 }
 EOF
