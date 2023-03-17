@@ -943,7 +943,7 @@ yellow "$(cat /root/HY/acl/Cmeta-hy.yaml)"
 
 hylog(){
 echo
-green "退出hysteria日志查看，请按ctrl+c"
+red "退出 Hysteria 日志查看，请按 Ctrl+c"
 echo
 journalctl -u hysteria-server --output cat -f
 }
