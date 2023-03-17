@@ -1,5 +1,5 @@
 #!/bin/bash
-hyygV="23.1.19 V 5.8"
+hyygV="23.3.17 V 5.9"
 remoteV=`wget -qO- https://gitlab.com/rwkgyg/hysteria-yg/raw/main/hysteria.sh | sed  -n 2p | cut -d '"' -f 2`
 chmod +x /root/hysteria.sh 
 red='\033[0;31m'
