@@ -941,6 +941,11 @@ green "当前Clash-Meta客户端配置文件Cmeta-hy.yaml内容如下，保存�
 yellow "$(cat /root/HY/acl/Cmeta-hy.yaml)"
 }
 
+hylog(){
+journalctl -u hysteria-server --output cat -f
+green "退出请按ctrl+c"
+}
+
 start_menu(){
 hysteriastatus
 clear
@@ -968,6 +973,7 @@ white "-------------------------------------------------------------------------
 green " 7. 显示当前hysteria分享链接、二维码、V2rayN配置文件、Clash-meta配置文件"
 green " 8. ACME证书管理菜单"
 green " 9. 安装WARP（可选）"
+green "10. 查看hysteria运行日志"
 green " 0. 退出脚本"
 red "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 if [[ -n $(systemctl status hysteria-server 2>/dev/null | grep -w active) && -f '/etc/hysteria/config.json' ]]; then
@@ -1002,6 +1008,7 @@ case "$Input" in
  7 ) hysteriashare;;
  8 ) acme;;
  9 ) cfwarp;;
+10 ) hylog;;
  * ) exit 
 esac
 }
