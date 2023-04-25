@@ -112,7 +112,7 @@ fi
 if [[ -z $(grep 'DiG 9' /etc/hosts) ]]; then
 v4=$(curl -s4m6 ip.sb -k)
 if [ -z $v4 ]; then
-echo -e nameserver 2a01:4f8:c2c:123f::1 > /etc/resolv.conf
+echo -e "nameserver 2001:67c:2960::64\nnameserver 2001:67c:2960::6464" > /etc/resolv.conf
 fi
 fi
 systemctl stop firewalld.service >/dev/null 2>&1
