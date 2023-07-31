@@ -105,7 +105,7 @@ fi
 [[ ! $(type -P qrencode) ]] && ($yumapt update;$yumapt install qrencode)
 [[ ! $(type -P sysctl) ]] && ($yumapt update;$yumapt install procps)
 [[ ! $(type -P iptables) ]] && ($yumapt update;$yumapt install iptables-persistent)
-[[ ! $(type -P python3) ]] && (yellow "检测到python3未安装，升级安装中" && $yumapt update;$yumapt install python3)
+#[[ ! $(type -P python3) ]] && (yellow "检测到python3未安装，升级安装中" && $yumapt update;$yumapt install python3)
 if [[ -z $(systemctl status netfilter-persistent 2>/dev/null | grep -w active) ]]; then
 $yumapt update;$yumapt install netfilter-persistent
 fi 
@@ -730,9 +730,11 @@ sed -i '/systemctl restart hysteria-server/d' /etc/crontab
 echo "0 4 * * * systemctl restart hysteria-server >/dev/null 2>&1" >> /etc/crontab
 chmod +x /root/hysteria.sh 
 ln -sf /root/hysteria.sh /usr/bin/hy
-wget -P /root/HY https://gitlab.com/rwkgyg/hysteria-yg/raw/main/GetRoutes.py 
-python3 /root/HY/GetRoutes.py
-mv -f Country.mmdb routes.acl /root/HY/acl
+#wget -P /root/HY https://gitlab.com/rwkgyg/hysteria-yg/raw/main/GetRoutes.py 
+#python3 /root/HY/GetRoutes.py
+#mv -f Country.mmdb routes.acl /root/HY/acl
+acl路由规则文件，请点击此链接下载 https://github.com/yonggekkk/Hysteria-yg/releases/download/main/acl.zip
+sleep 3
 hysteriastatus
 white "$status\n"
 sureipadress(){
@@ -753,7 +755,7 @@ blue "\n分享链接保存到 /root/HY/URL.txt" && sleep 3
 yellow "${url}\n"
 green "二维码分享链接如下(SagerNet / Matsuri / 小火箭)" && sleep 3
 qrencode -o - -t ANSIUTF8 "$(cat /root/HY/URL.txt)"
-blue "\nv2rayn客户端配置文件v2rayn.json 、Clash-Meta客户端配置文件Cmeta-hy.yaml、acl代理规则文件都保存到 /root/HY/acl\n" && sleep 3
+blue "\nv2rayn客户端配置文件v2rayn.json 、Clash-Meta客户端配置文件Cmeta-hy.yaml /root/HY/acl\n" && sleep 3
 blue "v2rayn客户端配置文件v2rayn.json内容如下，可直接复制" && sleep 3
 yellow "$(cat /root/HY/acl/v2rayn.json)\n"
 blue "Clash-Meta客户端配置文件Cmeta-hy.yaml内容如下，可直接复制" && sleep 3
