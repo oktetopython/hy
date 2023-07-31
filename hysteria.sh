@@ -730,7 +730,7 @@ sed -i '/systemctl restart hysteria-server/d' /etc/crontab
 echo "0 4 * * * systemctl restart hysteria-server >/dev/null 2>&1" >> /etc/crontab
 chmod +x /root/hysteria.sh 
 ln -sf /root/hysteria.sh /usr/bin/hy
-wget -NP /root/HY https://gitlab.com/rwkgyg/hysteria-yg/raw/main/GetRoutes.py 
+wget -P /root/HY https://gitlab.com/rwkgyg/hysteria-yg/raw/main/GetRoutes.py 
 python3 /root/HY/GetRoutes.py
 mv -f Country.mmdb routes.acl /root/HY/acl
 hysteriastatus
