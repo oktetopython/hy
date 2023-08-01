@@ -105,7 +105,7 @@ fi
 [[ ! $(type -P qrencode) ]] && ($yumapt update;$yumapt install qrencode)
 [[ ! $(type -P sysctl) ]] && ($yumapt update;$yumapt install procps)
 [[ ! $(type -P iptables) ]] && ($yumapt update;$yumapt install iptables-persistent)
-#[[ ! $(type -P python3) ]] && (yellow "检测到python3未安装，升级安装中" && $yumapt update;$yumapt install python3)
+[[ ! $(type -P python3) ]] && (yellow "检测到python3未安装，升级安装中" && $yumapt update;$yumapt install python3)
 if [[ -z $(systemctl status netfilter-persistent 2>/dev/null | grep -w active) ]]; then
 $yumapt update;$yumapt install netfilter-persistent
 fi 
@@ -730,10 +730,10 @@ sed -i '/systemctl restart hysteria-server/d' /etc/crontab
 echo "0 4 * * * systemctl restart hysteria-server >/dev/null 2>&1" >> /etc/crontab
 chmod +x /root/hysteria.sh 
 ln -sf /root/hysteria.sh /usr/bin/hy
-#wget -P /root/HY https://gitlab.com/rwkgyg/hysteria-yg/raw/main/GetRoutes.py 
-#python3 /root/HY/GetRoutes.py
-#mv -f Country.mmdb routes.acl /root/HY/acl
-acl路由规则文件，请点击此链接下载 https://github.com/yonggekkk/Hysteria-yg/releases/download/main/acl.zip
+wget -P /root/HY https://gitlab.com/rwkgyg/hysteria-yg/raw/main/GetRoutes.py 
+python3 /root/HY/GetRoutes.py
+mv -f Country.mmdb routes.acl /root/HY/acl
+green "acl路由规则文件，也可在此链接下载 https://github.com/yonggekkk/Hysteria-yg/releases/download/main/acl.zip"
 sleep 3
 hysteriastatus
 white "$status\n"
