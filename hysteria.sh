@@ -383,7 +383,7 @@ cat <<EOF > /root/HY/acl/Cmeta-hy.yaml
     type: hysteria
     server: ${Cymip}
     port: $port
-    auth_str: ${pswd}
+    auth-str: ${pswd}
     alpn:
       - h3
     protocol: ${hysteria_protocol}
