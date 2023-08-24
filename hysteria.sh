@@ -391,6 +391,7 @@ cat <<EOF > /root/HY/acl/Cmeta-hy.yaml
     down: 100
     sni: ${ym}
     skip-cert-verify: ${ins}
+    fast-open: true
 EOF
 }
 
